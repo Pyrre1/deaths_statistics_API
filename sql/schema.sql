@@ -31,5 +31,5 @@ CREATE TABLE IF NOT EXISTS deaths (
     age_code TEXT NOT NULL REFERENCES ages(age_code),
     diagnosis_code TEXT NOT NULL REFERENCES causes(diagnosis_code),
     measure_code INT NOT NULL REFERENCES measures(measure_code),
-    value NUMERIC
+    value NUMERIC NULL
 );
