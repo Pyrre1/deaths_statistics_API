@@ -1,4 +1,4 @@
-from repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository
 
 class CausesRepository(BaseRepository):
     def insert_one(self, diagnosis_code, diagnosis_text):

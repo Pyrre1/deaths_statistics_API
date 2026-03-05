@@ -1,4 +1,4 @@
-from repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository
 
 class DeathsRepository(BaseRepository):
     ALLOWED_ORDER_COLUMNS = {

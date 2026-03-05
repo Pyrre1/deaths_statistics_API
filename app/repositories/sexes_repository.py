@@ -1,4 +1,4 @@
-from repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository
 
 class SexesRepository(BaseRepository):
     def insert_one(self, sex_code, sex_text):

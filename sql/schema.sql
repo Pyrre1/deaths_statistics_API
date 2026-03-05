@@ -4,12 +4,12 @@ CREATE TABLE IF NOT EXISTS sexes (
 );
 
 CREATE TABLE IF NOT EXISTS regions (
-    region_code TEXT PRIMARY KEY,
+    region_code INT PRIMARY KEY,
     region_text TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ages (
-    age_code TEXT PRIMARY KEY,
+    age_code INT PRIMARY KEY,
     age_text TEXT NOT NULL
 );
 
@@ -26,9 +26,9 @@ CREATE TABLE IF NOT EXISTS causes (
 CREATE TABLE IF NOT EXISTS deaths (
     id SERIAL PRIMARY KEY,
     year INT NOT NULL,
-    region_code TEXT NOT NULL REFERENCES regions(region_code),
+    region_code INT NOT NULL REFERENCES regions(region_code),
     sex_code INT NOT NULL REFERENCES sexes(sex_code),
-    age_code TEXT NOT NULL REFERENCES ages(age_code),
+    age_code INT NOT NULL REFERENCES ages(age_code),
     diagnosis_code TEXT NOT NULL REFERENCES causes(diagnosis_code),
     measure_code INT NOT NULL REFERENCES measures(measure_code),
     value NUMERIC NULL

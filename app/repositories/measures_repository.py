@@ -1,4 +1,4 @@
-from repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository
 
 class MeasuresRepository(BaseRepository):
     def insert_one(self, measure_code, measure_text):

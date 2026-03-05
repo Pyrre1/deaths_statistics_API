@@ -1,13 +1,13 @@
 import csv
 import os
 
-from database.connection import get_db_connection
-from repositories.sexes_repository import SexesRepository
-from repositories.regions_repository import RegionsRepository
-from repositories.ages_repository import AgesRepository
-from repositories.measures_repository import MeasuresRepository
-from repositories.causes_repository import CausesRepository
-from repositories.deaths_repository import DeathsRepository
+from app.dependencies.connection import get_db_connection
+from app.repositories.sexes_repository import SexesRepository
+from app.repositories.regions_repository import RegionsRepository
+from app.repositories.ages_repository import AgesRepository
+from app.repositories.measures_repository import MeasuresRepository
+from app.repositories.causes_repository import CausesRepository
+from app.repositories.deaths_repository import DeathsRepository
 
 DATA_DIR = os.getenv("DATA_DIR")
 
@@ -15,7 +15,6 @@ def load_sexes(db):
   sexes_repo = SexesRepository(db)
   with open(f"{DATA_DIR}/dödsorsaker - meta - kön.csv", encoding="utf-8-sig") as file:
     reader = csv.DictReader(file, delimiter=";")
-    print(reader.fieldnames) # TODO: Ta bort detta, endast för felsökn-ing 
     for row in reader:
       sexes_repo.insert_one(
         sex_code=row['Kön'],
@@ -62,9 +61,9 @@ def load_causes(db):
         diagnosis_text=row['Text']
       )
 
-def load_deaths_sample(db, max_rows=1000, batch_size=500): # test med första 1000 raderna, batch_size bestämmer hur många rader som ska laddas in i databasen i varje batch
+def load_deaths_sample(db, max_rows=10000, batch_size=1000): # test med första 10000 raderna, batch_size bestämmer hur många rader som ska laddas in i databasen i varje batch
   deaths_repo_sample = DeathsRepository(db)
-  
+  print("Datasets loaded") # TODO: Ta bort detta, endast för felsökn-ing 
   def load_file(path, measure_code):
     batch = []
     counter = 0
@@ -73,8 +72,13 @@ def load_deaths_sample(db, max_rows=1000, batch_size=500): # test med första 10
       reader = csv.DictReader(file, delimiter=";")
 
       for row in reader:
+        year = int(row["År"])
+
         if counter >= max_rows:
           break
+
+        if not (2024 <= year <=2024):
+          continue
 
         value_raw = row['Värde']
         if value_raw in ('', '..'):

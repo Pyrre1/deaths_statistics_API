@@ -1,4 +1,4 @@
-from repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository
 
 class RegionsRepository(BaseRepository):
   def insert_one(self, region_code, region_text):

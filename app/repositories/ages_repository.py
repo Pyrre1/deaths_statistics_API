@@ -1,4 +1,4 @@
-from repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository
 
 class AgesRepository(BaseRepository):
     def insert_one(self, age_code, age_text):
