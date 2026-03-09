@@ -1,35 +1,48 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
-# Models for the regions table in the database (internal)
+# ===== DATABASE MODELS (Internal) =====
 class RegionDB(BaseModel):
     region_code: int
     region_text: str
 
-# Model for the API response when fetching all regions (external)
-class RegionListResponse(BaseModel):
-    data: list[RegionResponse]
-    total: int
-    # TODO: add HATEOAS, calculated data, etc.
-    # HATEOAS to specific region.
-    # pagination if needed (only 22 there)
+    class Config:
+        from_attributes = True # Allows creating from DB rows.
 
-
-# Model for the API response when fetching one region (external)
+# ===== API RESPONSE MODELS (External) =====
 class RegionResponse(BaseModel):
+    """Single region basic info"""
+    code: int = Field(..., description="Unique region identifier")
+    name: str = Field(..., description="Region name")
+
+    class Config:
+      json_schema_extra = {
+        "example": {
+          "code": 1,
+          "name": "Stockholm"
+        }
+      }
+
+class RegionStatistics(BaseModel):
+    """Statistics for a region"""
+    total_deaths: int
+    avg_age: float
+    top_causes: Optional[list[str]] = None # TODO: Implement this later.
+
+class RegionDetailResponse(BaseModel):
+    """Detailed region with statistics"""
     code: int
     name: str
-    statistics: Optional[RegionStatistics]
+    statistics: Optional[RegionStatistics] = None
+    # TODO: add _links, and HATEOAS later.
 
-    # TODO: add HATEOAS, calculated data, etc.
-    # RegionStatistics: {
-    # top_three_causes: Optional[List[CauseResponse]]
-    # oldest_death: Optional[DeathResponse]
-    # youngest_death: Optional[DeathResponse]
-    # average_age: Optional[float] 
-    #}
-    # Links to prev/next region
-    # Link to causes (other read only)
-    # Link to deaths in this region? (out of scope?)
+class RegionsListResponse(BaseModel):
+    """List of all regions"""
+    data: list[RegionResponse]
+    total: int
+    # TODO: add pagination and HATEOAS links later.
+
+
+
 
 
