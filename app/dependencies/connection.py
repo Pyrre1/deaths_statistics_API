@@ -22,6 +22,8 @@ def get_db_connection():
         return None
 
 # FastAPI dependency
+# TODO: Implement connection pooling for better performance in production
+# Current implementation creates new connection per request.
 def get_db():
     connection = get_db_connection()
     try:

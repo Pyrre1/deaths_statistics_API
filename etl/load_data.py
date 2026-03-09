@@ -1,5 +1,7 @@
 import csv
 import os
+import time
+import io
 
 from app.dependencies.connection import get_db_connection
 from app.repositories.sexes_repository import SexesRepository
@@ -7,7 +9,7 @@ from app.repositories.regions_repository import RegionsRepository
 from app.repositories.ages_repository import AgesRepository
 from app.repositories.measures_repository import MeasuresRepository
 from app.repositories.causes_repository import CausesRepository
-from app.repositories.deaths_repository import DeathsRepository
+# from app.repositories.deaths_repository import DeathsRepository
 
 DATA_DIR = os.getenv("DATA_DIR")
 
@@ -61,61 +63,119 @@ def load_causes(db):
         diagnosis_text=row['Text']
       )
 
-def load_deaths_sample(db, max_rows=10000, batch_size=1000): # test med första 10000 raderna, batch_size bestämmer hur många rader som ska laddas in i databasen i varje batch
-  deaths_repo_sample = DeathsRepository(db)
-  print("Datasets loaded") # TODO: Ta bort detta, endast för felsökn-ing 
-  def load_file(path, measure_code):
-    batch = []
-    counter = 0
+def load_file(path, measure_code, from_year, to_year, manual_max_rows, batch_size, db):
+  print(f"Loading {os.path.basename(path)}...")
 
-    with open(path, encoding="utf-8-sig") as file:
-      reader = csv.DictReader(file, delimiter=";")
+  with open(path, encoding="utf-8-sig") as file:
+    total_rows = sum(1 for _ in file) - 1 # Räkna totala rader i filen (minus header)
 
-      for row in reader:
-        year = int(row["År"])
+  if manual_max_rows is None:
+    max_rows = total_rows
+  else:
+    max_rows = manual_max_rows
 
-        if counter >= max_rows:
-          break
+  total_batches_estimate = (max_rows // batch_size) + (1 if max_rows % batch_size > 0 else 0)
 
-        if not (2024 <= year <=2024):
-          continue
+  start = time.perf_counter()
+  eta_start = None
 
-        value_raw = row['Värde']
-        if value_raw in ('', '..'):
-          continue
+  # Establish a COPY buffer to be able to read BIG files.
+  buffer = io.StringIO()
+  cursor = db.cursor()
 
-        batch.append((
-          int(row['År']),
-          row['Region'],
-          int(row['Kön']),
-          row['Ålder'],
-          row['Diagnos'],
-          measure_code,
-          float(value_raw.replace(',', '.')) # Convert comma to dot for decimal values
-        ))
+  checked_rows = 0
+  batches_done = 0
 
-        if len(batch) >= batch_size:
-          for row_values in batch:
-            deaths_repo_sample.insert_one(*row_values)
-          batch = []
+  with open(path, encoding="utf-8-sig") as file:
+    reader = csv.DictReader(file, delimiter=";")
 
-        counter += 1
+    for row in reader:
+      checked_rows += 1
 
-    if batch:
-      for row_values in batch: # Row_values motsvarar "year, region_code, sex_code, age_code, diagnosis_code, measure_code, value"
-        deaths_repo_sample.insert_one(*row_values)
+      if checked_rows >= max_rows:
+        break
+      
+      year = int(row["År"])
+      if not (from_year <= year <= to_year):
+        continue
 
-  load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda - 1997-2024.csv", measure_code=1)
-  load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda per 100 000 - 1997-2024.csv", measure_code=2)
+      value_raw = row['Värde']
+      if value_raw in ('', '..'):
+        continue
+
+      buffer.write(
+        f"{row['År']},"
+        f"{row['Region']},"
+        f"{row['Kön']},"
+        f"{row['Ålder']},"
+        f"{row['Diagnos']},"
+        f"{measure_code},"
+        f"{value_raw.replace(',', '.')}\n"
+      )
+
+      if buffer.tell() >= batch_size * 100: # Approximate size in bytes for batch_size rows (assuming ~100 bytes per row)
+        buffer.seek(0)
+        cursor.copy("COPY deaths FROM STDIN WITH CSV", buffer)
+        buffer = io.StringIO() # Reset buffer for next batch
+
+        batches_done += 1
+
+        progress = checked_rows / max_rows
+        bar_length = 30
+        filled = int(progress * bar_length)
+        bar = f"\033[92m{'#' * filled}\033[91m{'-' * (bar_length - filled)}\033[0m"
+
+        elapsed = time.perf_counter() - eta_start if eta_start else 0
+        eta = (elapsed / progress - elapsed ) if progress > 0 else 0
+
+        print(
+          f"\r[{bar}] {progress*100:5.1f}% "
+          f"Estimated time remaining: {eta:5.1f} seconds "
+          f"Checked: {checked_rows}/{max_rows}",
+          end=''
+        )
+
+    if buffer.tell() > 0: # Load any remaining data in the buffer
+      buffer.seek(0)
+      cursor.copy("COPY deaths FROM STDIN WITH CSV", buffer)
+
+    db.commit() # Commit all changes after loading the file
+
+    end = time.perf_counter()
+    print(f"\nFinished {os.path.basename(path)} in {end - start:.2f} seconds")
+
+
+def load_deaths_sample(db, manual_max_rows=None, batch_size=2500): # test med första 10000 raderna, batch_size bestämmer hur många rader som ska laddas in i databasen i varje batch
+    from_year = 1997
+    to_year = 2024
+
+    load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda - 1997-2024.csv", 
+        measure_code=1, 
+        from_year=from_year, 
+        to_year=to_year,
+        manual_max_rows=manual_max_rows,
+        batch_size=batch_size,
+        db=db
+    )
+
+    load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda per 100 000 - 1997-2024.csv", 
+        measure_code=2,
+        from_year=from_year,
+        to_year=to_year,
+        manual_max_rows=manual_max_rows,
+        batch_size=batch_size,
+        db=db
+    )
+
 
 def main():
-  db_connection = get_db_connection()
-  load_sexes(db_connection)
-  load_regions(db_connection)
-  load_ages(db_connection)
-  load_measures(db_connection)
-  load_causes(db_connection)
-  load_deaths_sample(db_connection)
+    db_connection = get_db_connection()
+    load_sexes(db_connection)
+    load_regions(db_connection)
+    load_ages(db_connection)
+    load_measures(db_connection)
+    load_causes(db_connection)
+    load_deaths_sample(db_connection)
 
 if __name__ == "__main__": # Om denna fil körs direkt, så kommer main() att köras. Om den importeras som en modul, så kommer main() inte att köras automatiskt.
-  main()
+    main()
