@@ -143,3 +143,45 @@ class DeathsRepository(BaseRepository):
         "order_by": order_by,
         "direction": direction
       }
+
+    def count_by_region(self, region_code):
+      result = self.fetch_one(
+        """
+        SELECT COUNT(*) AS total FROM deaths
+        WHERE region_code = %s
+          AND age_code != 99
+        """,
+        (region_code,)
+      )
+      return result["total"]if result else 0
+
+    def average_age_by_region(self, region_code):
+      """Calculates the average age_code for region and returns the range text"""
+      result = self.fetch_one(
+        """
+        SELECT AVG(age_code) AS avg_age_code
+        FROM deaths
+        WHERE region_code = %s
+          AND age_code != 99
+      """, (region_code,))
+
+      print(f"DEBUG: AVG result = {result}")
+
+      if not result or result["avg_age_code"] is None:
+        return "Unknown"
+
+      # Round to nearest integer.
+      avg_code = round(result["avg_age_code"])
+      print(f"DEBUG: Rounded avg_code = {avg_code}")
+
+      # Get the age range text for the average code.
+      age_range = self.fetch_one(
+        """
+        SELECT age_text 
+        FROM ages
+        WHERE age_code = %s
+        """, (avg_code,))
+
+      print(f"DEBUG: Age range result = {age_range}")
+
+      return age_range["age_text"] if age_range else "Unknown"

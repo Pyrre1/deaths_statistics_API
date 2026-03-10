@@ -12,13 +12,13 @@ class RegionDB(BaseModel):
 # ===== API RESPONSE MODELS (External) =====
 class RegionResponse(BaseModel):
     """Single region basic info"""
-    code: int = Field(..., description="Unique region identifier")
+    id: int = Field(..., description="Unique region identifier")
     name: str = Field(..., description="Region name")
 
     class Config:
       json_schema_extra = {
         "example": {
-          "code": 1,
+          "id": 1,
           "name": "Stockholm"
         }
       }
@@ -26,12 +26,24 @@ class RegionResponse(BaseModel):
 class RegionStatistics(BaseModel):
     """Statistics for a region"""
     total_deaths: int
-    avg_age: float
-    top_causes: Optional[list[str]] = None # TODO: Implement this later.
+    avg_age_range: str = Field(
+      ..., 
+      description="Average age range of deaths in the region"
+    )
+    # top_causes: Optional[list[str]] = None # TODO: Implement this later.
+
+    class Config:
+      json_schema_extra = {
+        "example": {
+          "total_deaths": 1234,
+          "avg_age_range": "75-79",
+          # "top_causes": ["Heart Disease", "Cancer", "Stroke"]
+        }
+      }
 
 class RegionDetailResponse(BaseModel):
     """Detailed region with statistics"""
-    code: int
+    id: int
     name: str
     statistics: Optional[RegionStatistics] = None
     # TODO: add _links, and HATEOAS later.
@@ -40,6 +52,18 @@ class RegionsListResponse(BaseModel):
     """List of all regions"""
     data: list[RegionResponse]
     total: int
+
+    class Config:
+      json_schema_extra = {
+        "example": {
+          "data": [
+            {"id": 0, "name": "Riket"},
+            {"id": 1, "name": "Stockholm"},
+            {"id": 2, "name": "Gothenburg"}
+          ],
+          "total": 3
+        }
+      }
     # TODO: add pagination and HATEOAS links later.
 
 

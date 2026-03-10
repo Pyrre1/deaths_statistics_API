@@ -1,14 +1,16 @@
 from fastapi import HTTPException
 from app.repositories.regions_repository import RegionsRepository
-from app.models.region_models import RegionResponse, RegionsListResponse
+from app.models.region_models import RegionResponse, RegionsListResponse, RegionDetailResponse
+from app.services.region_service import RegionService
 
 class RegionsController:
   def __init__(self, db):
     self.regions_repo = RegionsRepository(db)
+    self.region_service = RegionService(db)
 
   def _map_to_response(self, region_data):
     return RegionResponse(
-      code=region_data["region_code"],
+      id=region_data["region_code"],
       name=region_data["region_text"]
     )
 
@@ -28,5 +30,13 @@ class RegionsController:
     region_data = self.regions_repo.get_by_code(region_code)
     if not region_data:
       raise HTTPException(status_code=404, detail="Region not found")
-    # Transformera datan till en RegionResponse-modell
-    return self._map_to_response(region_data)
+    
+    # Get statistics
+    statistics = self.region_service.get_region_statistics(region_code)
+
+    # Return detailed response including statistics
+    return RegionDetailResponse(
+      id=region_data["region_code"],
+      name=region_data["region_text"],
+      statistics=statistics
+    )
