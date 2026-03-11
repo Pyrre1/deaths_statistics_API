@@ -1,14 +1,14 @@
 import csv
 import os
 import time
-import io
 
 from app.dependencies.connection import get_db_connection
-from app.repositories.sexes_repository import SexesRepository
-from app.repositories.regions_repository import RegionsRepository
 from app.repositories.ages_repository import AgesRepository
-from app.repositories.measures_repository import MeasuresRepository
 from app.repositories.causes_repository import CausesRepository
+from app.repositories.measures_repository import MeasuresRepository
+from app.repositories.regions_repository import RegionsRepository
+from app.repositories.sexes_repository import SexesRepository
+
 # from app.repositories.deaths_repository import DeathsRepository
 
 DATA_DIR = os.getenv("DATA_DIR")
@@ -93,7 +93,7 @@ def load_file(path, measure_code, from_year, to_year, manual_max_rows, batch_siz
 
     for row in reader:
       checked_rows += 1
-      
+
       year = int(row["År"])
       if not (from_year <= year <= to_year):
         continue
@@ -183,16 +183,16 @@ def load_file(path, measure_code, from_year, to_year, manual_max_rows, batch_siz
 
 
 def load_deaths_sample(db, manual_max_rows=None, batch_size=2500, from_year=1997, to_year=2024):
-    load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda - 1997-2024.csv", 
-        measure_code=1, 
-        from_year=from_year, 
+    load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda - 1997-2024.csv",
+        measure_code=1,
+        from_year=from_year,
         to_year=to_year,
         manual_max_rows=manual_max_rows,
         batch_size=batch_size,
         db=db
     )
 
-    load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda per 100 000 - 1997-2024.csv", 
+    load_file(f"{DATA_DIR}/dödsorsaker - data - antal döda per 100 000 - 1997-2024.csv",
         measure_code=2,
         from_year=from_year,
         to_year=to_year,

@@ -1,5 +1,6 @@
+
 from pydantic import BaseModel, Field
-from typing import Optional
+
 
 # ===== DATABASE MODELS (Internal) =====
 class RegionDB(BaseModel):
@@ -27,11 +28,11 @@ class RegionStatistics(BaseModel):
     """Statistics for a region"""
     total_deaths: int
     avg_age_range: str = Field(
-      ..., 
+      ...,
       description="Average age range of deaths in the region"
     )
     timeframe: dict = Field(
-      ..., 
+      ...,
       description="Timeframe for these statistics"
     )
     # top_causes: Optional[list[str]] = None # TODO: Implement this later.
@@ -42,7 +43,7 @@ class RegionStatistics(BaseModel):
           "total_deaths": 1234,
           "avg_age_range": "75-79",
           "timeframe": {
-            "from_year": 2010, 
+            "from_year": 2010,
             "to_year": 2020
             }
           # "top_causes": ["Heart Disease", "Cancer", "Stroke"] # TODO: Implement this later.
@@ -53,7 +54,7 @@ class RegionDetailResponse(BaseModel):
     """Detailed region with statistics"""
     id: int
     name: str
-    statistics: Optional[RegionStatistics] = None
+    statistics: RegionStatistics | None = None
     # TODO: add _links, and HATEOAS later.
 
 class RegionsListResponse(BaseModel):
@@ -73,8 +74,3 @@ class RegionsListResponse(BaseModel):
         }
       }
     # TODO: add pagination and HATEOAS links later.
-
-
-
-
-

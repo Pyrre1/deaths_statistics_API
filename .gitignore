@@ -1,6 +1,47 @@
-
+# Python
 .venv/
+venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Environment
 .env
+
+# Data (CSV files are huge!)
 data/
+
+# added from AI suggestions.
+# IDE
+.vscode/*
+!.vscode/settings.json  # ← Keep settings.json for team
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+
+# Misc
+*.bak
+*.tmp

@@ -1,7 +1,9 @@
 from fastapi import HTTPException
-from app.repositories.regions_repository import RegionsRepository
-from app.repositories.deaths_repository import DeathsRepository
+
 from app.models.region_models import RegionStatistics
+from app.repositories.deaths_repository import DeathsRepository
+from app.repositories.regions_repository import RegionsRepository
+
 
 class RegionService:
   def __init__(self, db):
@@ -13,12 +15,12 @@ class RegionService:
     region = self.regions_repo.get_by_code(region_code)
     if not region:
       raise HTTPException(status_code=404, detail="Region not found")
-    
+
     # Calculate statistics
     total_deaths = self.deaths_repo.count_by_region(region_code)
     avg_age_range = self.deaths_repo.average_age_by_region(region_code)
     year_range = self.deaths_repo.get_year_range_by_region(region_code)
-    
+
     # Return Pydantic model with statistics
     return RegionStatistics(
       total_deaths=total_deaths,
