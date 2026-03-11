@@ -121,12 +121,14 @@ class DeathsRepository(BaseRepository):
             "direction": direction,
         }
 
+    # Region-specific queries
     def count_by_region(self, region_code):
+        filter_clause = self._build_non_aggregate_filter()
         result = self.fetch_one(
-            """
+            f"""
         SELECT COUNT(*) AS total FROM deaths
         WHERE region_code = %s
-          AND age_code != 99
+          AND {filter_clause}
         """,
             (region_code,),
         )
@@ -134,13 +136,15 @@ class DeathsRepository(BaseRepository):
 
     def average_age_by_region(self, region_code):
         """Calculates the average age_code for region and returns the range text"""
+        filter_clause = self._build_non_aggregate_filter()
+
         result = self.fetch_one(
-            """
+            f"""
         SELECT AVG(age_code) AS avg_age_code
         FROM deaths
         WHERE region_code = %s
-          AND age_code != 99
-      """,
+          AND {filter_clause}
+        """,
             (region_code,),
         )
 
@@ -176,5 +180,79 @@ class DeathsRepository(BaseRepository):
           AND {filter_clause}
         """,
             (region_code,),
+        )
+        return result if result else {"min_year": None, "max_year": None}
+
+    # Cause-specific queries
+    def count_by_cause(self, diagnosis_code):
+        base_filter = """
+        age_code != 99
+        AND sex_code != 3
+        AND region_code != 0
+        """
+
+        result = self.fetch_one(
+            f"""
+            SELECT COUNT(*) AS total
+            FROM deaths
+            WHERE diagnosis_code = %s
+              AND {base_filter}
+            """,
+            (diagnosis_code,),
+        )
+        return result["total"] if result else 0
+
+    def average_age_by_cause(self, diagnosis_code):
+        """Calculate average age range for a cause"""
+        base_filter = """
+        age_code != 99
+        AND sex_code != 3
+        AND region_code != 0
+        """
+
+        result = self.fetch_one(
+            f"""
+            SELECT AVG(age_code) AS avg_age_code
+            FROM deaths
+            WHERE diagnosis_code = %s
+              AND {base_filter}
+            """,
+            (diagnosis_code,),
+        )
+
+        if not result or result["avg_age_code"] is None:
+            return "Unknown"
+
+        avg_code = round(result["avg_age_code"])
+
+        age_range = self.fetch_one(
+            """
+            SELECT age_text
+            FROM ages
+            WHERE age_code = %s
+            """,
+            (avg_code,),
+        )
+
+        return age_range["age_text"] if age_range else "Unknown"
+
+    def get_year_range_by_cause(self, diagnosis_code):
+        """Get min and max year for a cause"""
+        base_filter = """
+        age_code != 99
+        AND sex_code != 3
+        AND region_code != 0
+        """
+
+        result = self.fetch_one(
+            f"""
+            SELECT
+              MIN(year) AS min_year,
+              MAX(year) AS max_year
+            FROM deaths
+            WHERE diagnosis_code = %s
+              AND {base_filter}
+            """,
+            (diagnosis_code,),
         )
         return result if result else {"min_year": None, "max_year": None}
