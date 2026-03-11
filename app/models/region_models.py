@@ -30,6 +30,10 @@ class RegionStatistics(BaseModel):
       ..., 
       description="Average age range of deaths in the region"
     )
+    timeframe: dict = Field(
+      ..., 
+      description="Timeframe for these statistics"
+    )
     # top_causes: Optional[list[str]] = None # TODO: Implement this later.
 
     class Config:
@@ -37,7 +41,11 @@ class RegionStatistics(BaseModel):
         "example": {
           "total_deaths": 1234,
           "avg_age_range": "75-79",
-          # "top_causes": ["Heart Disease", "Cancer", "Stroke"]
+          "timeframe": {
+            "from_year": 2010, 
+            "to_year": 2020
+            }
+          # "top_causes": ["Heart Disease", "Cancer", "Stroke"] # TODO: Implement this later.
         }
       }
 

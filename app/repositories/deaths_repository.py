@@ -165,14 +165,11 @@ class DeathsRepository(BaseRepository):
           AND age_code != 99
       """, (region_code,))
 
-      print(f"DEBUG: AVG result = {result}")
-
       if not result or result["avg_age_code"] is None:
         return "Unknown"
 
       # Round to nearest integer.
       avg_code = round(result["avg_age_code"])
-      print(f"DEBUG: Rounded avg_code = {avg_code}")
 
       # Get the age range text for the average code.
       age_range = self.fetch_one(
@@ -182,6 +179,21 @@ class DeathsRepository(BaseRepository):
         WHERE age_code = %s
         """, (avg_code,))
 
-      print(f"DEBUG: Age range result = {age_range}")
-
       return age_range["age_text"] if age_range else "Unknown"
+
+    def get_year_range_by_region(self, region_code):
+      """Get min and max year for a region"""
+      filter_clause = self._build_non_aggregate_filter()
+
+      result = self.fetch_one(
+        f"""
+        SELECT 
+        MIN(year) AS min_year, 
+        MAX(year) AS max_year
+        FROM deaths
+        WHERE region_code = %s
+          AND {filter_clause}
+        """,
+        (region_code,)
+      )
+      return result if result else {"min_year": None, "max_year": None}
