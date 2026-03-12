@@ -10,7 +10,8 @@ class BaseRepository:
         age_code != 99
         AND sex_code != 3
         AND diagnosis_code != '99'
-      """
+        AND measure_code = 1
+        """
 
     def execute(self, query, params=None):
         with self.db_connection.cursor() as cursor:

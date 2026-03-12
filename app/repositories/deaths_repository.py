@@ -14,30 +14,41 @@ class DeathsRepository(BaseRepository):
     }
 
     def insert_one(
-        self, year, region_code, sex_code, age_code, diagnosis_code, measure_code, value
-    ):
-        self.execute(
+        self, year, region_code, sex_code, age_code, diagnosis_code, measure_code, deaths_count
+    ) -> int:
+        """Insert a new death record and return its ID."""
+        cursor = self.db_connection.cursor()
+
+        cursor.execute(
             """
-        INSERT INTO deaths (
-          year,
-          region_code,
-          sex_code,
-          age_code,
-          diagnosis_code,
-          measure_code,
-          value
+            INSERT INTO deaths (
+            year,
+            region_code,
+            sex_code,
+            age_code,
+            diagnosis_code,
+            measure_code,
+            value
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (year, region_code, sex_code, age_code, diagnosis_code, measure_code, deaths_count),
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """,
-            (year, region_code, sex_code, age_code, diagnosis_code, measure_code, value),
-        )
+        result = cursor.fetchone()
+        self.db_connection.commit()
+
+        return result["id"]
 
     def get_by_id(self, death_id):
-        return self.fetch_one("SELECT * FROM deaths WHERE id = %s;", (death_id,))
+        return self.fetch_one(
+            "SELECT *, value AS deaths_count FROM deaths WHERE id = %s;", (death_id,)
+        )
 
     def get_all(self, limit=100, offset=0):
         rows = self.fetch_all(
-            "SELECT * FROM deaths ORDER BY id LIMIT %s OFFSET %s;", (limit, offset)
+            "SELECT *, value AS deaths_count FROM deaths ORDER BY id LIMIT %s OFFSET %s;",
+            (limit, offset),
         )
 
         total = self.fetch_one("SELECT COUNT(*) AS total FROM deaths")["total"]
@@ -96,11 +107,11 @@ class DeathsRepository(BaseRepository):
             where_clause = "WHERE " + " AND ".join(filters)
 
         query = f"""
-        SELECT * FROM deaths
+        SELECT *, value AS deaths_count FROM deaths
         {where_clause}
         ORDER BY {order_by} {direction}
         LIMIT %s OFFSET %s
-      """
+        """
 
         params_with_pagination = params + [limit, offset]
 
@@ -109,7 +120,7 @@ class DeathsRepository(BaseRepository):
         count_query = f"""
         SELECT COUNT(*) AS total FROM deaths
         {where_clause}
-      """
+        """
         total = self.fetch_one(count_query, params)["total"]
 
         return {
@@ -121,6 +132,69 @@ class DeathsRepository(BaseRepository):
             "direction": direction,
         }
 
+    def update_one(self, death_id, **kwargs):
+        """
+        Update a death record.
+
+        Args:
+            death_id: The death record ID.
+            **kwargs: Fields to update (year, region_code, sex_code, age_code, diagnosis_code, measure_code, value).
+
+        Returns:
+            Updated record or None if not found.
+        """
+        # dynamic SET clause.
+        set_clauses = []
+        params = []
+
+        allowed_fields = {
+            "year",
+            "region_code",
+            "sex_code",
+            "age_code",
+            "diagnosis_code",
+            "measure_code",
+            "value",
+        }
+
+        for field, value in kwargs.items():
+            if field in allowed_fields:
+                set_clauses.append(f"{field} = %s")
+                params.append(value)
+
+        if not set_clauses:
+            return None  # No valid fields to update
+
+        params.append(death_id)
+
+        query = f"""
+            UPDATE deaths
+            SET {", ".join(set_clauses)}
+            WHERE id = %s
+            RETURNING *
+            """
+
+        self.execute(query, tuple(params))
+        return self.get_by_id(death_id)
+
+    def delete_one(self, death_id):
+        """
+        Delete a death record.
+
+        Args:
+            death_id: The death record ID.
+
+        Returns:
+            True if deleted, False if not found.
+        """
+
+        existing = self.get_by_id(death_id)
+        if not existing:
+            return False
+
+        self.execute("DELETE FROM deaths WHERE id = %s;", (death_id,))
+        return True
+
     # Region-specific queries
     def count_by_region(self, region_code):
         filter_clause = self._build_non_aggregate_filter()
@@ -128,7 +202,7 @@ class DeathsRepository(BaseRepository):
             f"""
         SELECT COUNT(*) AS total FROM deaths
         WHERE region_code = %s
-          AND {filter_clause}
+        AND {filter_clause}
         """,
             (region_code,),
         )
@@ -189,6 +263,7 @@ class DeathsRepository(BaseRepository):
         age_code != 99
         AND sex_code != 3
         AND region_code != 0
+        AND measure_code = 1
         """
 
         result = self.fetch_one(
@@ -208,6 +283,7 @@ class DeathsRepository(BaseRepository):
         age_code != 99
         AND sex_code != 3
         AND region_code != 0
+        AND measure_code = 1
         """
 
         result = self.fetch_one(
@@ -242,6 +318,7 @@ class DeathsRepository(BaseRepository):
         age_code != 99
         AND sex_code != 3
         AND region_code != 0
+        AND measure_code = 1
         """
 
         result = self.fetch_one(
