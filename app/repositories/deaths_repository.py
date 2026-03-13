@@ -13,13 +13,34 @@ class DeathsRepository(BaseRepository):
         "value",
     }
 
+    DEATH_SELECT = """
+        SELECT
+            deaths.id,
+            deaths.year,
+            deaths.region_code,
+            deaths.sex_code,
+            deaths.age_code,
+            deaths.diagnosis_code,
+            deaths.measure_code,
+            deaths.value,
+            regions.region_text AS region_name,
+            sexes.sex_text AS sex_label,
+            ages.age_text AS age_range,
+            causes.diagnosis_text AS diagnosis_name,
+            measures.measure_text AS measure_label
+        FROM deaths
+        JOIN regions ON deaths.region_code = regions.region_code
+        JOIN sexes ON deaths.sex_code = sexes.sex_code
+        JOIN ages ON deaths.age_code = ages.age_code
+        JOIN causes ON deaths.diagnosis_code = causes.diagnosis_code
+        JOIN measures ON deaths.measure_code = measures.measure_code
+    """
+
     def insert_one(
-        self, year, region_code, sex_code, age_code, diagnosis_code, measure_code, deaths_count
+        self, year, region_code, sex_code, age_code, diagnosis_code, measure_code, value
     ) -> int:
         """Insert a new death record and return its ID."""
-        cursor = self.db_connection.cursor()
-
-        cursor.execute(
+        result = self.fetch_one(
             """
             INSERT INTO deaths (
             year,
@@ -33,21 +54,16 @@ class DeathsRepository(BaseRepository):
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
-            (year, region_code, sex_code, age_code, diagnosis_code, measure_code, deaths_count),
+            (year, region_code, sex_code, age_code, diagnosis_code, measure_code, value),
         )
-        result = cursor.fetchone()
-        self.db_connection.commit()
-
         return result["id"]
 
     def get_by_id(self, death_id):
-        return self.fetch_one(
-            "SELECT *, value AS deaths_count FROM deaths WHERE id = %s;", (death_id,)
-        )
+        return self.fetch_one(f"{self.DEATH_SELECT} WHERE deaths.id = %s;", (death_id,))
 
     def get_all(self, limit=100, offset=0):
         rows = self.fetch_all(
-            "SELECT *, value AS deaths_count FROM deaths ORDER BY id LIMIT %s OFFSET %s;",
+            f"{self.DEATH_SELECT} ORDER BY deaths.id LIMIT %s OFFSET %s;",
             (limit, offset),
         )
 
@@ -57,7 +73,8 @@ class DeathsRepository(BaseRepository):
 
     def find(
         self,
-        year=None,
+        from_year=None,
+        to_year=None,
         region_code=None,
         sex_code=None,
         age_code=None,
@@ -65,7 +82,7 @@ class DeathsRepository(BaseRepository):
         measure_code=None,
         limit=100,
         offset=0,
-        order_by="year",
+        order_by="id",
         direction="asc",
     ):
 
@@ -78,28 +95,35 @@ class DeathsRepository(BaseRepository):
         filters = []
         params = []
 
-        if year is not None:
-            filters.append("year = %s")
-            params.append(year)
+        if from_year is not None:
+            filters.append("deaths.year >= %s")
+            params.append(from_year)
+
+        if to_year is not None:
+            filters.append("deaths.year <= %s")
+            params.append(to_year)
 
         if region_code is not None:
-            filters.append("region_code = %s")
+            filters.append("deaths.region_code = %s")
             params.append(region_code)
 
         if sex_code is not None:
-            filters.append("sex_code = %s")
+            filters.append("deaths.sex_code = %s")
             params.append(sex_code)
 
         if age_code is not None:
-            filters.append("age_code = %s")
+            filters.append("deaths.age_code = %s")
             params.append(age_code)
 
         if diagnosis_code is not None:
-            filters.append("diagnosis_code = %s")
+            filters.append("deaths.diagnosis_code = %s")
             params.append(diagnosis_code)
 
+        if measure_code is None:
+            measure_code = 1
+
         if measure_code is not None:
-            filters.append("measure_code = %s")
+            filters.append("deaths.measure_code = %s")
             params.append(measure_code)
 
         where_clause = ""
@@ -107,9 +131,9 @@ class DeathsRepository(BaseRepository):
             where_clause = "WHERE " + " AND ".join(filters)
 
         query = f"""
-        SELECT *, value AS deaths_count FROM deaths
-        {where_clause}
-        ORDER BY {order_by} {direction}
+        {self.DEATH_SELECT}
+            {where_clause}
+        ORDER BY deaths.{order_by} {direction}
         LIMIT %s OFFSET %s
         """
 
@@ -118,7 +142,8 @@ class DeathsRepository(BaseRepository):
         rows = self.fetch_all(query, params_with_pagination)
 
         count_query = f"""
-        SELECT COUNT(*) AS total FROM deaths
+        SELECT COUNT(*) AS total
+        FROM deaths
         {where_clause}
         """
         total = self.fetch_one(count_query, params)["total"]
@@ -217,7 +242,7 @@ class DeathsRepository(BaseRepository):
         SELECT AVG(age_code) AS avg_age_code
         FROM deaths
         WHERE region_code = %s
-          AND {filter_clause}
+        AND {filter_clause}
         """,
             (region_code,),
         )
@@ -251,7 +276,7 @@ class DeathsRepository(BaseRepository):
         MAX(year) AS max_year
         FROM deaths
         WHERE region_code = %s
-          AND {filter_clause}
+        AND {filter_clause}
         """,
             (region_code,),
         )
@@ -271,7 +296,7 @@ class DeathsRepository(BaseRepository):
             SELECT COUNT(*) AS total
             FROM deaths
             WHERE diagnosis_code = %s
-              AND {base_filter}
+            AND {base_filter}
             """,
             (diagnosis_code,),
         )
@@ -291,7 +316,7 @@ class DeathsRepository(BaseRepository):
             SELECT AVG(age_code) AS avg_age_code
             FROM deaths
             WHERE diagnosis_code = %s
-              AND {base_filter}
+            AND {base_filter}
             """,
             (diagnosis_code,),
         )
@@ -324,11 +349,11 @@ class DeathsRepository(BaseRepository):
         result = self.fetch_one(
             f"""
             SELECT
-              MIN(year) AS min_year,
-              MAX(year) AS max_year
+            MIN(year) AS min_year,
+            MAX(year) AS max_year
             FROM deaths
             WHERE diagnosis_code = %s
-              AND {base_filter}
+            AND {base_filter}
             """,
             (diagnosis_code,),
         )

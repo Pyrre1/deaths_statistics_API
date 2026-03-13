@@ -11,7 +11,7 @@ class DeathDB(BaseModel):
     )
     diagnosis_code: str = Field(..., description="Diagnosis code")
     measure_code: int = Field(..., ge=1, le=2, description="Measure code (1=Count, 2=Per 100k)")
-    deaths_count: float | None = Field(..., description="Death count or rate")
+    value: float | None = Field(..., description="Death count or rate")
 
 
 class DeathCreate(DeathDB):
@@ -29,13 +29,25 @@ class DeathUpdate(BaseModel):
     age_code: int | None = Field(None, ge=1, le=99)
     diagnosis_code: str | None = None
     measure_code: int | None = Field(None, ge=1, le=2)
-    deaths_count: float | None = Field(None, description="Death count or rate")
+    value: float | None = Field(None, description="Death count or rate")
 
 
-class DeathResponse(DeathDB):
+class DeathResponse(BaseModel):
     """Response model for a death record"""
 
-    id: int = Field(..., description="Unique death record ID")
+    id: int
+    year: int
+    region_code: int
+    region_name: str
+    sex_code: int
+    sex_label: str
+    age_code: int
+    age_range: str
+    diagnosis_code: str
+    diagnosis_name: str
+    measure_code: int
+    measure_label: str
+    value: float | None = None
 
     class Config:
         from_attributes = True  # Allows creating from DB rows.

@@ -17,17 +17,43 @@ class DeathsController:
             age_code=death_data.age_code,
             diagnosis_code=death_data.diagnosis_code,
             measure_code=death_data.measure_code,
-            deaths_count=death_data.deaths_count,
+            value=death_data.value,
         )
 
         return self.get_one(new_id)
 
-    def get_all(self, limit=100, offset=0):
-        """Get all death records with pagination"""
-        result = self.deaths_repo.get_all(limit=limit, offset=offset)
+    def find(
+        self,
+        from_year=None,
+        to_year=None,
+        region_code=None,
+        sex_code=None,
+        age_code=None,
+        diagnosis_code=None,
+        measure_code=None,
+        order_by="id",
+        direction="asc",
+        limit=100,
+        offset=0,
+    ) -> DeathsListResponse:
+        try:
+            result = self.deaths_repo.find(
+                from_year=from_year,
+                to_year=to_year,
+                region_code=region_code,
+                sex_code=sex_code,
+                age_code=age_code,
+                diagnosis_code=diagnosis_code,
+                measure_code=measure_code,
+                order_by=order_by,
+                direction=direction,
+                limit=limit,
+                offset=offset,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         deaths = [DeathResponse(**death) for death in result["items"]]
-
         return DeathsListResponse(
             data=deaths,
             total=result["total"],

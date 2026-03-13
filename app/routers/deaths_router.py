@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.controllers.deaths_controller import DeathsController
 from app.dependencies.connection import get_db
@@ -15,10 +15,37 @@ def create_death(death_data: DeathCreate, db=Depends(get_db)):
 
 
 @router.get("/", response_model=DeathsListResponse)
-def get_deaths(limit: int = 100, offset: int = 0, db=Depends(get_db)):
-    """Get all death records with pagination"""
+def get_deaths(
+    from_year: int | None = Query(None, ge=1997, le=2030, description="Start year (inclusive)"),
+    to_year: int | None = Query(None, ge=1997, le=2030, description="End year (inclusive)"),
+    region_code: int | None = Query(None, description="Filter by region code"),
+    sex_code: int | None = Query(None, ge=1, le=3, description="1=Men, 2=Women, 3=Both"),
+    age_code: int | None = Query(
+        None, ge=1, le=99, description="1-20 for age groups, 99 for total"
+    ),
+    diagnosis_code: str | None = Query(None, description="Filter by diagnosis code"),
+    measure_code: int | None = Query(None, ge=1, le=2, description="1=Count, 2=Per 100k"),
+    order_by: str = Query("id", description="Field to order by (e.g. year, region_code)"),
+    direction: str = Query("asc", pattern="^(asc|desc)$", description="Sort direction"),
+    limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
+    offset: int = Query(0, ge=0, description="Number of records to skip"),
+    db=Depends(get_db),
+):
+    """Get death records with optional filtering and pagination"""
     controller = DeathsController(db)
-    return controller.get_all(limit=limit, offset=offset)
+    return controller.find(
+        from_year=from_year,
+        to_year=to_year,
+        region_code=region_code,
+        sex_code=sex_code,
+        age_code=age_code,
+        diagnosis_code=diagnosis_code,
+        measure_code=measure_code,
+        order_by=order_by,
+        direction=direction,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get("/{death_id}", response_model=DeathResponse)
