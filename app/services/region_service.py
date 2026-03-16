@@ -23,7 +23,9 @@ class RegionService:
 
         # Return Pydantic model with statistics
         return RegionStatistics(
-            total_deaths=total_deaths,
+            measure_code=1,
+            measure_label="Antal döda",
+            value=total_deaths,
             avg_age_range=avg_age_range,
             timeframe={"from_year": year_range["min_year"], "to_year": year_range["max_year"]},
         )

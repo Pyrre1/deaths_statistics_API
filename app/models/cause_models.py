@@ -24,14 +24,16 @@ class CauseResponse(BaseModel):
 class CauseStatistics(BaseModel):
     """Statistics for a specific cause"""
 
-    total_deaths: int
+    measure_code: int = Field(1, description="1=Count, 2=Per 100k")
+    measure_label: str = Field("Antal döda", description="Human-readable measure")
+    value: int = Field(..., description="Total deaths for this cause")
     avg_age_range: str = Field(..., description="Average age range of deaths for this cause")
     timeframe: dict = Field(..., description="Timeframe for the statistics")
 
     class Config:
         json_schema_extra = {
             "example": {
-                "total_deaths": 1234,
+                "value": 1234,
                 "avg_age_range": "75-79",
                 "timeframe": {"from_year": 2022, "to_year": 2024},
             }
@@ -49,19 +51,23 @@ class CauseDetailResponse(BaseModel):
 class CausesListResponse(BaseModel):
     """List of all causes"""
 
-    causes: list[CauseResponse]
+    data: list[CauseResponse]
     total: int
+    limit: int
+    offset: int
 
     class Config:
         json_schema_extra = {
             "example": {
                 "total": 5,
-                "causes": [
+                "data": [
                     {"code": "99", "name": "Samtliga dödsorsaker"},
                     {"code": "I21", "name": "Akut hjärtinfarkt"},
                     {"code": "C34", "name": "Malign tumör i bronk och lunga"},
                     {"code": "I63", "name": "Cerebral infarkt"},
                     {"code": "J18", "name": "Pneumoni orsakad av ospecificerad mikroorganism"},
                 ],
+                "limit": 100,
+                "offset": 0
             }
         }

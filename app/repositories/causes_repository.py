@@ -12,8 +12,15 @@ class CausesRepository(BaseRepository):
             (diagnosis_code, diagnosis_text),
         )
 
-    def get_all(self):
-        return self.fetch_all("SELECT * FROM causes ORDER BY diagnosis_code;")
+    def get_all(self, limit=100, offset=0):
+        return self.fetch_all(
+            "SELECT * FROM causes ORDER BY diagnosis_code LIMIT %s OFFSET %s;",
+            (limit, offset)
+        )
+
+    def count_all(self):
+        result = self.fetch_one("SELECT COUNT(*) AS total FROM causes;")
+        return result["total"] if result else 0
 
     def get_by_code(self, diagnosis_code):
         return self.fetch_one(

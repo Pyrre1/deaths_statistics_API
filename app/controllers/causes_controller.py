@@ -14,12 +14,13 @@ class CausesController:
         """Transform database model to API response"""
         return CauseResponse(code=cause_data["diagnosis_code"], name=cause_data["diagnosis_text"])
 
-    def get_all(self):
-        """Get all causes"""
-        causes_data = self.causes_repo.get_all()
+    def get_all(self, limit=100, offset=0):
+        """Get all causes, with pagination"""
+        causes_data = self.causes_repo.get_all(limit=limit, offset=offset)
+        total = self.causes_repo.count_all()
         causes = [self._map_to_response(cause) for cause in causes_data]
 
-        return CausesListResponse(causes=causes, total=len(causes))
+        return CausesListResponse(data=causes, total=total, limit=limit, offset=offset)
 
     def get_one(self, diagnosis_code):
         """Get single cause with statistics"""

@@ -14,7 +14,7 @@ class RegionDB(BaseModel):
 class RegionResponse(BaseModel):
     """Single region basic info"""
 
-    id: int = Field(..., description="Unique region identifier")
+    id: int = Field(..., description="Region code")
     name: str = Field(..., description="Region name")
 
     class Config:
@@ -24,7 +24,9 @@ class RegionResponse(BaseModel):
 class RegionStatistics(BaseModel):
     """Statistics for a region"""
 
-    total_deaths: int
+    measure_code: int = Field(1, description="1=Count, 2=Per 100k")
+    measure_label: str = Field("Antal döda", description="Human-readable measure")
+    value: int = Field(..., description="Total deaths in this region")
     avg_age_range: str = Field(..., description="Average age range of deaths in the region")
     timeframe: dict = Field(..., description="Timeframe for these statistics")
     # top_causes: Optional[list[str]] = None # TODO: Implement this later.
@@ -32,7 +34,7 @@ class RegionStatistics(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "total_deaths": 1234,
+                "value": 1234,
                 "avg_age_range": "75-79",
                 "timeframe": {"from_year": 2010, "to_year": 2020},
                 # "top_causes": ["Heart Disease", "Cancer", "Stroke"] # TODO: Implement this later.
