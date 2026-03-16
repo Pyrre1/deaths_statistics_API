@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -16,9 +18,20 @@ class CauseResponse(BaseModel):
 
     code: str = Field(..., description="Diagnosis code")
     name: str = Field(..., description="Cause of death description")
+    links: dict[str, Any] = Field(..., alias="_links")
 
     class Config:
-        json_schema_extra = {"example": {"code": "99", "name": "Samtliga dödsorsaker"}}
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "code": "I21",
+                "name": "Akut hjärtinfarkt",
+                "_links": {
+                    "self": "/causes/I21",
+                    "deaths": "/deaths?diagnosis_code=I21&measure_code=1",
+                },
+            }
+        }
 
 
 class CauseStatistics(BaseModel):
@@ -30,15 +43,6 @@ class CauseStatistics(BaseModel):
     avg_age_range: str = Field(..., description="Average age range of deaths for this cause")
     timeframe: dict = Field(..., description="Timeframe for the statistics")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "value": 1234,
-                "avg_age_range": "75-79",
-                "timeframe": {"from_year": 2022, "to_year": 2024},
-            }
-        }
-
 
 class CauseDetailResponse(BaseModel):
     """Detailed cause with statistics"""
@@ -46,6 +50,28 @@ class CauseDetailResponse(BaseModel):
     code: str
     name: str
     statistics: CauseStatistics | None = None
+    links: dict[str, Any] = Field(..., alias="_links")
+
+    class Config:
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "code": "I61",
+                "name": "Hjärnblödning",
+                "statistics": {
+                    "measure_code": 1,
+                    "measure_label": "Antal döda",
+                    "value": 866,
+                    "avg_age_range": "75-79",
+                    "timeframe": {"from_year": 2022, "to_year": 2024},
+                },
+                "_links": {
+                    "self": "/causes/I61",
+                    "deaths": "/deaths?diagnosis_code=I61&measure_code=1",
+                    "collection": "/causes",
+                },
+            }
+        }
 
 
 class CausesListResponse(BaseModel):
@@ -55,19 +81,37 @@ class CausesListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+    links: dict[str, Any] = Field(..., alias="_links")
 
     class Config:
+        populate_by_name = True
         json_schema_extra = {
             "example": {
-                "total": 5,
                 "data": [
-                    {"code": "99", "name": "Samtliga dödsorsaker"},
-                    {"code": "I21", "name": "Akut hjärtinfarkt"},
-                    {"code": "C34", "name": "Malign tumör i bronk och lunga"},
-                    {"code": "I63", "name": "Cerebral infarkt"},
-                    {"code": "J18", "name": "Pneumoni orsakad av ospecificerad mikroorganism"},
+                    {
+                        "code": "I21",
+                        "name": "Akut hjärtinfarkt",
+                        "_links": {
+                            "self": "/causes/I21",
+                            "deaths": "/deaths?diagnosis_code=I21&measure_code=1",
+                        },
+                    },
+                    {
+                        "code": "I61",
+                        "name": "Hjärnblödning",
+                        "_links": {
+                            "self": "/causes/I61",
+                            "deaths": "/deaths?diagnosis_code=I61&measure_code=1",
+                        },
+                    },
                 ],
+                "total": 1948,
                 "limit": 100,
-                "offset": 0
+                "offset": 0,
+                "_links": {
+                    "self": "/causes?limit=100&offset=0",
+                    "next": "/causes?limit=100&offset=100",
+                    "prev": None,
+                },
             }
         }

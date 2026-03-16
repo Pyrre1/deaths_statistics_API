@@ -12,14 +12,26 @@ class RegionsController:
 
     def _map_to_response(self, region_data):
         """Transform database model to API response"""
-        return RegionResponse(id=region_data["region_code"], name=region_data["region_text"])
+        region_code = region_data["region_code"]
+        return RegionResponse(
+            id=region_data["region_code"],
+            name=region_data["region_text"],
+            _links={
+                "self": f"/regions/{region_code}",
+                "deaths": f"/deaths?region_code={region_code}&measure_code=1",
+            },
+        )
 
     def get_all(self):
         """Get all regions"""
         regions_data = self.regions_repo.get_all()
         regions = [self._map_to_response(region) for region in regions_data]
 
-        return RegionsListResponse(data=regions, total=len(regions))
+        return RegionsListResponse(
+            data=regions,
+            total=len(regions),
+            _links={"self": "/regions"},
+        )
 
     def get_one(self, region_code):
         """Get single region with statistics"""
@@ -32,5 +44,12 @@ class RegionsController:
 
         # Return detailed response including statistics
         return RegionDetailResponse(
-            id=region_data["region_code"], name=region_data["region_text"], statistics=statistics
+            id=region_data["region_code"],
+            name=region_data["region_text"],
+            statistics=statistics,
+            _links={
+                "self": f"/regions/{region_code}",
+                "deaths": f"/deaths?region_code={region_code}&measure_code=1",
+                "collection": "/regions",
+            },
         )

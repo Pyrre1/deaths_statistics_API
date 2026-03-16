@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -48,9 +50,34 @@ class DeathResponse(BaseModel):
     measure_code: int
     measure_label: str
     value: float | None = None
+    links: dict[str, Any] = Field(..., alias="_links")
 
     class Config:
+        populate_by_name = True
         from_attributes = True  # Allows creating from DB rows.
+        json_schema_extra = {
+            "example": {
+                "id": 391979,
+                "year": 2024,
+                "region_code": 3,
+                "region_name": "Uppsala län",
+                "sex_code": 2,
+                "sex_label": "Kvinnor",
+                "age_code": 16,
+                "age_range": "71-75",
+                "diagnosis_code": "I00-I99",
+                "diagnosis_name": "Cirkulationsorganens sjukdomar",
+                "measure_code": 1,
+                "measure_label": "Antal döda",
+                "value": 368,
+                "_links": {
+                    "self": "/deaths/391979",
+                    "region": "/regions/3",
+                    "cause": "/causes/I00-I99",
+                    "collection": "/deaths",
+                },
+            }
+        }
 
 
 class DeathsListResponse(BaseModel):
@@ -60,3 +87,20 @@ class DeathsListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+    links: dict[str, Any] = Field(..., alias="_links")
+
+    class Config:
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "data": ["... list of death records ..."],
+                "total": 411214,
+                "limit": 100,
+                "offset": 0,
+                "_links": {
+                    "self": "/deaths?limit=100&offset=0&measure_code=1",
+                    "next": "/deaths?limit=100&offset=100&measure_code=1",
+                    "prev": None,
+                },
+            }
+        }

@@ -16,9 +16,17 @@ class RegionResponse(BaseModel):
 
     id: int = Field(..., description="Region code")
     name: str = Field(..., description="Region name")
+    links: dict[str, str] | None = Field(..., alias="_links")
 
     class Config:
-        json_schema_extra = {"example": {"id": 1, "name": "Stockholm"}}
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "Stockholms län",
+                "_links": {"self": "/regions/1", "deaths": "/deaths?region_code=1&measure_code=1"},
+            }
+        }
 
 
 class RegionStatistics(BaseModel):
@@ -31,16 +39,6 @@ class RegionStatistics(BaseModel):
     timeframe: dict = Field(..., description="Timeframe for these statistics")
     # top_causes: Optional[list[str]] = None # TODO: Implement this later.
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "value": 1234,
-                "avg_age_range": "75-79",
-                "timeframe": {"from_year": 2010, "to_year": 2020},
-                # "top_causes": ["Heart Disease", "Cancer", "Stroke"] # TODO: Implement this later.
-            }
-        }
-
 
 class RegionDetailResponse(BaseModel):
     """Detailed region with statistics"""
@@ -48,7 +46,28 @@ class RegionDetailResponse(BaseModel):
     id: int
     name: str
     statistics: RegionStatistics | None = None
-    # TODO: add _links, and HATEOAS later.
+    links: dict[str, str] | None = Field(..., alias="_links")
+
+    class Config:
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "Stockholms län",
+                "statistics": {
+                    "measure_code": 1,
+                    "measure_label": "Antal döda",
+                    "value": 15615,
+                    "avg_age_range": "65-69",
+                    "timeframe": {"from_year": 2022, "to_year": 2024},
+                },
+                "_links": {
+                    "self": "/regions/1",
+                    "deaths": "/deaths?region_code=1&measure_code=1",
+                    "collection": "/regions",
+                },
+            }
+        }
 
 
 class RegionsListResponse(BaseModel):
@@ -56,17 +75,31 @@ class RegionsListResponse(BaseModel):
 
     data: list[RegionResponse]
     total: int
+    links: dict[str, str] | None = Field(..., alias="_links")
 
     class Config:
+        populate_by_name = True
         json_schema_extra = {
             "example": {
                 "data": [
-                    {"id": 0, "name": "Riket"},
-                    {"id": 1, "name": "Stockholm"},
-                    {"id": 2, "name": "Gothenburg"},
+                    {
+                        "id": 0,
+                        "name": "Riket",
+                        "_links": {
+                            "self": "/regions/0",
+                            "deaths": "/deaths?region_code=0&measure_code=1",
+                        },
+                    },
+                    {
+                        "id": 1,
+                        "name": "Stockholms län",
+                        "_links": {
+                            "self": "/regions/1",
+                            "deaths": "/deaths?region_code=1&measure_code=1",
+                        },
+                    },
                 ],
-                "total": 3,
+                "total": 22,
+                "_links": {"self": "/regions"},
             }
         }
-
-    # TODO: add pagination and HATEOAS links later.
