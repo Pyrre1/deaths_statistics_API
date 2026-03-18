@@ -20,7 +20,7 @@ class UsersRepository(BaseRepository):
 
     def insert_one(self, username: str, password_hash: str) -> int:
         """Insert a new user and return the new user's ID"""
-        result = self.fetch_one(
+        result = self.fetch_one_write(
             """
             INSERT INTO users (username, password_hash)
             VALUES (%s, %s)

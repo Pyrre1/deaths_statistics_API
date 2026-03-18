@@ -40,7 +40,7 @@ class DeathsRepository(BaseRepository):
         self, year, region_code, sex_code, age_code, diagnosis_code, measure_code, value
     ) -> int:
         """Insert a new death record and return its ID."""
-        result = self.fetch_one(
+        result = self.fetch_one_write(
             """
             INSERT INTO deaths (
             year,

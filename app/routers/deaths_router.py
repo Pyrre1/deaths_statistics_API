@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.controllers.deaths_controller import DeathsController
+from app.dependencies.auth import get_current_user
 from app.dependencies.connection import get_db
 from app.models.death_models import DeathCreate, DeathResponse, DeathsListResponse, DeathUpdate
 
@@ -8,7 +9,11 @@ router = APIRouter(prefix="/deaths", tags=["Deaths"])
 
 
 @router.post("/", response_model=DeathResponse, status_code=201)
-def create_death(death_data: DeathCreate, db=Depends(get_db)):
+def create_death(
+    death_data: DeathCreate,
+    db=Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
     """Create a new death record"""
     controller = DeathsController(db)
     return controller.create(death_data)
@@ -56,14 +61,23 @@ def get_death(death_id: int, db=Depends(get_db)):
 
 
 @router.put("/{death_id}", response_model=DeathResponse)
-def update_death(death_id: int, death_data: DeathUpdate, db=Depends(get_db)):
+def update_death(
+    death_id: int,
+    death_data: DeathUpdate,
+    db=Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
     """Update an existing death record"""
     controller = DeathsController(db)
     return controller.update(death_id, death_data)
 
 
 @router.delete("/{death_id}")
-def delete_death(death_id: int, db=Depends(get_db)):
+def delete_death(
+    death_id: int,
+    db=Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
     """Delete a death record by ID"""
     controller = DeathsController(db)
     return controller.delete(death_id)

@@ -27,3 +27,9 @@ class BaseRepository:
         with self.db_connection.cursor() as cursor:
             cursor.execute(query, params)
             return cursor.fetchone()
+
+    def fetch_one_write(self, query, params=None):
+        with self.db_connection.cursor() as cursor:
+            cursor.execute(query, params)
+            self.db_connection.commit()
+            return cursor.fetchone()
