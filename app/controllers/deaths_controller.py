@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from psycopg.errors import ForeignKeyViolation
 
 from app.models.death_models import DeathCreate, DeathResponse, DeathsListResponse, DeathUpdate
 from app.repositories.deaths_repository import DeathsRepository
@@ -23,15 +24,21 @@ class DeathsController:
 
     def create(self, death_data: DeathCreate) -> DeathResponse:
         """Create a new death record"""
-        new_id = self.deaths_repo.insert_one(
-            year=death_data.year,
-            region_code=death_data.region_code,
-            sex_code=death_data.sex_code,
-            age_code=death_data.age_code,
-            diagnosis_code=death_data.diagnosis_code,
-            measure_code=death_data.measure_code,
-            value=death_data.value,
-        )
+        try:
+            new_id = self.deaths_repo.insert_one(
+                year=death_data.year,
+                region_code=death_data.region_code,
+                sex_code=death_data.sex_code,
+                age_code=death_data.age_code,
+                diagnosis_code=death_data.diagnosis_code,
+                measure_code=death_data.measure_code,
+                value=death_data.value,
+            )
+        except ForeignKeyViolation as error:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid reference: {error.diag.message_detail}"
+            )
 
         return self.get_one(new_id)
 
