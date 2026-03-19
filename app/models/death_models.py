@@ -33,6 +33,12 @@ class DeathUpdate(BaseModel):
     measure_code: int | None = Field(None, ge=1, le=2)
     value: float | None = Field(None, description="Death count or rate")
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "value": 123
+            }
+        }
 
 class DeathResponse(BaseModel):
     """Response model for a death record"""

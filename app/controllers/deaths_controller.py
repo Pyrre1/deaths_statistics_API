@@ -111,7 +111,14 @@ class DeathsController:
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields provided for update")
 
-        updated = self.deaths_repo.update_one(death_id, **update_data)
+        try:
+            updated = self.deaths_repo.update_one(death_id, **update_data)
+        except ForeignKeyViolation as error:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid reference: {error.diag.message_detail}"
+            )
+
 
         if not updated:
             raise HTTPException(status_code=404, detail="Death record not found")
