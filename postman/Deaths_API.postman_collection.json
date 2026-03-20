@@ -1211,7 +1211,7 @@
                   "pm.test(\"Returns validation error detail\", () => {\r",
                   "    const body = pm.response.json();\r",
                   "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.be.an(\"array\");\r",
+                  "    pm.expect(body.error).to.be.an(\"string\");\r",
                   "    pm.expect(body.error.length).to.be.greaterThan(0);\r",
                   "});"
                 ],
