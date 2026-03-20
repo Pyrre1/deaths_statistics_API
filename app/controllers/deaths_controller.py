@@ -36,7 +36,7 @@ class DeathsController:
             )
         except ForeignKeyViolation as error:
             raise HTTPException(
-                status_code=422,
+                status_code=400,
                 detail=f"Invalid reference: {error.diag.message_detail}"
             )
 
@@ -115,7 +115,7 @@ class DeathsController:
             updated = self.deaths_repo.update_one(death_id, **update_data)
         except ForeignKeyViolation as error:
             raise HTTPException(
-                status_code=422,
+                status_code=400,
                 detail=f"Invalid reference: {error.diag.message_detail}"
             )
 

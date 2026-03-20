@@ -1,11 +1,14 @@
+import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
 
+current_year = datetime.datetime.now().year
+
 
 # ===== DATABASE MODELS (Internal) =====
 class DeathDB(BaseModel):
-    year: int = Field(..., ge=1997, le=2030, description="Year of death")
+    year: int = Field(..., ge=1997, le=current_year, description="Year of death")
     region_code: int = Field(..., description="Region code")
     sex_code: int = Field(..., ge=1, le=3, description="Sex code (1=Men, 2=Women, 3=Both or n/a)")
     age_code: int = Field(
@@ -25,7 +28,7 @@ class DeathCreate(DeathDB):
 class DeathUpdate(BaseModel):
     """Request model for updating an existing death record (all fields optional)"""
 
-    year: int | None = Field(None, ge=1997, le=2030)
+    year: int | None = Field(None, ge=1997, le=current_year)
     region_code: int | None = None
     sex_code: int | None = Field(None, ge=1, le=3)
     age_code: int | None = Field(None, ge=1, le=99)
@@ -34,11 +37,8 @@ class DeathUpdate(BaseModel):
     value: float | None = Field(None, description="Death count or rate")
 
     class Config:
-        json_schema_extra = {
-            "example": {
-                "value": 123
-            }
-        }
+        json_schema_extra = {"example": {"value": 123}}
+
 
 class DeathResponse(BaseModel):
     """Response model for a death record"""

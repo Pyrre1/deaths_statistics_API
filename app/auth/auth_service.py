@@ -1,5 +1,6 @@
 import hashlib
 import os
+import secrets
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
@@ -50,6 +51,7 @@ class AuthService:
             "sub": str(user_id),
             "exp": expires_at,
             "type": "refresh",
+            "jti": secrets.token_hex(16),  # Unique identifier for the token (for revocation)
         }
 
         raw_token = jwt.encode(payload, self.SECRET_KEY, algorithm=self.ALGORITHM)
@@ -123,6 +125,18 @@ class AuthService:
             "token_type": "bearer",
             "expires_in": self.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         }
+
+    # -- Registration --#
+    def register(self, username: str, password: str) -> dict:
+        """Create a new user. Raises 409 if username is taken."""
+        existing = self.users_repo.get_by_username(username)
+        if existing:
+            raise HTTPException(status_code=409, detail="Username already taken")
+
+        password_hash = self.hash_password(password)
+        user_id = self.users_repo.insert_one(username, password_hash)
+
+        return {"id": user_id, "username": username}
 
     # -- Helpers --#
     @staticmethod

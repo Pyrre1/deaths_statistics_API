@@ -18,3 +18,7 @@ class RefreshRequest(BaseModel):
     """Request model for token refresh endpoint"""
     refresh_token: str = Field(..., description="JWT refresh token")
 
+class RegisterRequest(BaseModel):
+    """Request model for user registration endpoint"""
+    username: str = Field(..., min_length=4, max_length=50,description="Username")
+    password: str = Field(..., min_length=12, description="Password")
