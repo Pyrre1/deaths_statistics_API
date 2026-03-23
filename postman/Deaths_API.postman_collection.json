@@ -88,8 +88,8 @@
                   "\r",
                   "pm.test(\"Returns error detail\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.equal(\"Invalid username or password\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.equal(\"Invalid username or password\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -185,8 +185,8 @@
                   "\r",
                   "pm.test(\"Returns error message\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.be.a(\"string\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.a(\"string\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -233,7 +233,7 @@
                   "\r",
                   "pm.test(\"Returns error message\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
                   "});\r",
                   ""
                 ],
@@ -281,8 +281,8 @@
                   "\r",
                   "pm.test(\"Returns error message\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.include(\"taken\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.include(\"taken\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -447,7 +447,7 @@
                   "\r",
                   "pm.test(\"Returns error detail\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -608,7 +608,7 @@
                   "\r",
                   "pm.test(\"Returns error detail\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -631,53 +631,6 @@
               "path": [
                 "causes",
                 "INVALID"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create death - missing required fields",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 400\", () => {\r",
-                  "    pm.response.to.have.status(400);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns descriptive error\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.be.a(\"string\");\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"year\": 2024\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/deaths",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths"
               ]
             }
           },
@@ -882,7 +835,7 @@
                   "\r",
                   "pm.test(\"Returns error detail\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1070,7 +1023,7 @@
                   "\r",
                   "pm.test(\"Returns authentication error\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1119,7 +1072,7 @@
                   "\r",
                   "pm.test(\"Returns authentication error\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1169,7 +1122,7 @@
                   "\r",
                   "pm.test(\"Returns authentication error\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1198,6 +1151,60 @@
           "response": []
         },
         {
+          "name": "Create death - missing required fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns descriptive error\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.a(\"string\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"year\": 2024\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/deaths",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Create death - invalid input",
           "event": [
             {
@@ -1210,9 +1217,9 @@
                   "\r",
                   "pm.test(\"Returns validation error detail\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.be.an(\"string\");\r",
-                  "    pm.expect(body.error.length).to.be.greaterThan(0);\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.an(\"string\");\r",
+                  "    pm.expect(body.message.length).to.be.greaterThan(0);\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1258,9 +1265,9 @@
                   "\r",
                   "pm.test(\"Returns descriptive error\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.be.a(\"string\");\r",
-                  "    pm.expect(body.error.length).to.be.greaterThan(0);\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.a(\"string\");\r",
+                  "    pm.expect(body.message.length).to.be.greaterThan(0);\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1306,8 +1313,8 @@
                   "\r",
                   "pm.test(\"Returns descriptive error\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.be.a(\"string\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.a(\"string\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1354,8 +1361,8 @@
                   "\r",
                   "pm.test(\"Returns error message\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"error\");\r",
-                  "    pm.expect(body.error).to.include(\"not found\");\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.include(\"not found\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
