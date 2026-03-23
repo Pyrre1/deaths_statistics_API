@@ -33,9 +33,6 @@ data/
 .DS_Store
 Thumbs.db
 
-# Docker
-.dockerignore
-
 # Testing
 .pytest_cache/
 htmlcov/
