@@ -7,7 +7,7 @@ from app.routers.deaths_router import router as deaths_router
 from app.routers.regions_router import router as regions_router
 from app.utils.error_handlers import http_exception_handler, validation_exception_handler
 
-app = FastAPI(root_path="/api")
+app = FastAPI(root_path="/api", redirect_slashes=False)
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler) # type: ignore
 app.add_exception_handler(HTTPException, http_exception_handler) # type: ignore

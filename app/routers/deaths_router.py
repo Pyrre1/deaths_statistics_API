@@ -19,7 +19,7 @@ def create_death(
     return controller.create(death_data)
 
 
-@router.get("/", response_model=DeathsListResponse)
+@router.get("", response_model=DeathsListResponse)
 def get_deaths(
     from_year: int | None = Query(None, ge=1997, le=2030, description="Start year (inclusive)"),
     to_year: int | None = Query(None, ge=1997, le=2030, description="End year (inclusive)"),

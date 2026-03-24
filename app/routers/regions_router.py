@@ -7,7 +7,7 @@ from app.models.region_models import RegionDetailResponse, RegionsListResponse
 router = APIRouter(prefix="/regions", tags=["Regions"])
 
 
-@router.get("/", response_model=RegionsListResponse)
+@router.get("", response_model=RegionsListResponse)
 def get_regions(db=Depends(get_db)):
     controller = RegionsController(db)
     return controller.get_all()
