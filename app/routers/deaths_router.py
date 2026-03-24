@@ -8,7 +8,7 @@ from app.models.death_models import DeathCreate, DeathResponse, DeathsListRespon
 router = APIRouter(prefix="/deaths", tags=["Deaths"])
 
 
-@router.post("/", response_model=DeathResponse, status_code=201)
+@router.post("", response_model=DeathResponse, status_code=201)
 def create_death(
     death_data: DeathCreate,
     db=Depends(get_db),
