@@ -1,0 +1,23 @@
+stages:
+  - test
+
+newman:
+  stage: test
+  image: node:20-alpine
+  before_script:
+    - npm install -g newman
+  script:
+    - newman run postman/Deaths_API.postman_collection.json
+        --environment postman/production.postman_environment.json
+        --insecure
+        --bail
+        --reporters cli,json
+        --reporter-json-export newman-report.json
+  artifacts:
+    when: always
+    paths:
+      - newman-report.json
+    expire_in: 7 days
+  only:
+    - main
+    - merge_requests
