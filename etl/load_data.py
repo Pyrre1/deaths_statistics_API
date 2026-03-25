@@ -187,19 +187,19 @@ def main():
     load_measures(db_connection)
     load_causes(db_connection)
 
-    load_mode = os.getenv("DATA_LOAD_MODE", "sample").lower()
+    load_mode = os.getenv("DATA_LOAD_MODE", "").lower()
 
     if load_mode == "full":
         print("Starting FULL load of death records (1997-2024).")
         load_deaths_sample(db_connection)
-    elif load_mode == "quick":
-        print("Starting QUICK load (Only: 2024, 10k rows).")
-        load_deaths_sample(db_connection, manual_max_rows=10000, from_year=2024, to_year=2024)
-    else:
+    elif load_mode == "sample":
         print(
             "Starting SAMPLE load of death records (2022-2024). Set FULL_DATA_LOAD=true to load all years."
         )
         load_deaths_sample(db_connection, from_year=2022, to_year=2024)
+    else:
+        print("Starting QUICK load (Only: 1997, 10k rows).")
+        load_deaths_sample(db_connection, manual_max_rows=10000, from_year=1997, to_year=1997)
 
 
 if (

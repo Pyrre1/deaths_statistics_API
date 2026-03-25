@@ -9,10 +9,22 @@ from app.utils.error_handlers import http_exception_handler, validation_exceptio
 
 app = FastAPI(root_path="/api", redirect_slashes=False)
 
-app.add_exception_handler(RequestValidationError, validation_exception_handler) # type: ignore
-app.add_exception_handler(HTTPException, http_exception_handler) # type: ignore
+app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore
+app.add_exception_handler(HTTPException, http_exception_handler)  # type: ignore
 
 app.include_router(regions_router)
 app.include_router(deaths_router)
 app.include_router(auth_router)
 app.include_router(causes_router)
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "Welcome to the Assignment Swedish Death Statistics API",
+        "documentation": "https://cu1034.camp.lnu.se/api/docs",
+        "version": "1.0.0",
+        "CRUD_endpoints": "https://cu1034.camp.lnu.se/api/deaths",
+        "Read only endpoint 1": "https://cu1034.camp.lnu.se/api/causes",
+        "Read only endpoint 2": "https://cu1034.camp.lnu.se/api/regions",
+    }
