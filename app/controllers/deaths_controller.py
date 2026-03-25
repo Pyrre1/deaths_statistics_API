@@ -12,13 +12,16 @@ class DeathsController:
 
     def _map_to_response(self, death_data):
         """Map a database row to a DeathResponse with HATEOAS links."""
+        base = f"https://cu1034.camp.lnu.se/api/deaths/{death_data['id']}"
         return DeathResponse(
             **{key: value for key, value in death_data.items()},
             _links={
-                "self": f"/deaths/{death_data['id']}",
-                "region": f"/regions/{death_data['region_code']}",
-                "cause": f"/causes/{death_data['diagnosis_code']}",
-                "collection": "/deaths",
+                "self":       {"href": base, "method": "GET"},
+                "update":     {"href": base, "method": "PUT"},
+                "delete":     {"href": base, "method": "DELETE"},
+                "collection": {"href": "https://cu1034.camp.lnu.se/api/deaths", "method": "GET"},
+                "region":     {"href": f"https://cu1034.camp.lnu.se/api/regions/{death_data['region_code']}", "method": "GET"},
+                "cause":      {"href": f"https://cu1034.camp.lnu.se/api/causes/{death_data['diagnosis_code']}", "method": "GET"},
             },
         )
 
@@ -76,24 +79,27 @@ class DeathsController:
 
         deaths = [self._map_to_response(death) for death in result["items"]]
 
+        links = pagination_links(
+            "https://cu1034.camp.lnu.se/api/deaths",
+            offset=offset,
+            limit=limit,
+            total=result["total"],
+            from_year=from_year,
+            to_year=to_year,
+            region_code=region_code,
+            sex_code=sex_code,
+            age_code=age_code,
+            diagnosis_code=diagnosis_code,
+            measure_code=measure_code,
+        )
+        links["create"] = {"href": "https://cu1034.camp.lnu.se/api/deaths", "method": "POST"}
+
         return DeathsListResponse(
             data=deaths,
             total=result["total"],
             limit=limit,
             offset=offset,
-            _links=pagination_links(
-                "/deaths",
-                offset=offset,
-                limit=limit,
-                total=result["total"],
-                from_year=from_year,
-                to_year=to_year,
-                region_code=region_code,
-                sex_code=sex_code,
-                age_code=age_code,
-                diagnosis_code=diagnosis_code,
-                measure_code=measure_code,
-            ),
+            _links=links,
         )
 
     def get_one(self, death_id: int):
