@@ -11,10 +11,12 @@ def get_causes(
     limit: int = Query(100, ge=1, le=5000, description="Number of records to return"),
     offset: int = Query(0, ge=0, description="Number of records to skip"),
     db=Depends(get_db)):
+    """Return a paginated list of all causes of death."""
     controller = CausesController(db)
     return controller.get_all(limit=limit, offset=offset)
 
 @router.get("/{diagnosis_code}", response_model=CauseDetailResponse)
 def get_cause(diagnosis_code: str, db=Depends(get_db)):
+    """Return a single cause of death with aggregated statistics."""
     controller = CausesController(db)
     return controller.get_one(diagnosis_code)

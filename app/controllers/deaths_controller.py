@@ -56,6 +56,7 @@ class DeathsController:
         limit=100,
         offset=0,
     ) -> DeathsListResponse:
+        """Filter and paginate death records, mapping results to DeathsListResponse with HATEOAS links."""
         try:
             result = self.deaths_repo.find(
                 from_year=from_year,

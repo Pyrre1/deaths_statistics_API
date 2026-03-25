@@ -7,6 +7,7 @@ from psycopg.rows import dict_row
 load_dotenv()
 
 def get_db_connection():
+    """Open and return a psycopg connection with dict_row factory. Returns None on failure."""
     try:
         connection = psycopg.connect(
             host=os.getenv('DB_HOST'),
@@ -14,7 +15,7 @@ def get_db_connection():
             user=os.getenv('DB_USER'),
             password=os.getenv('DB_PASSWORD'),
             port=os.getenv('DB_PORT'),
-            row_factory=dict_row
+            row_factory=dict_row # type: ignore
         )
         print("Connecting to:", os.getenv("DB_HOST"), os.getenv("DB_NAME"))
         return connection
@@ -26,6 +27,7 @@ def get_db_connection():
 # TODO: Implement connection pooling for better performance in production
 # Current implementation creates new connection per request.
 def get_db():
+    """FastAPI dependency that yields a database connection and closes it after the request."""
     connection = get_db_connection()
     try:
         yield connection

@@ -224,6 +224,7 @@ This is a superset of the `{"error": "message"}` format specified in requirement
 - Implement rate limiting from the start, especially for public endpoints.
 - Use RS256 instead of HS256 if building for multi-service architecture.
 - I have in my own TODO list to migrate the hosting to my Raspberry Pi, and without VPN protection layer, rate limit is needed.
+- Implement pooling for better performance instead of create connection per request.
 
 ## Acknowledgements
 

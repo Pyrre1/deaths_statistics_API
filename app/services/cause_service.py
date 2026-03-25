@@ -7,10 +7,12 @@ from app.repositories.deaths_repository import DeathsRepository
 
 class CauseService:
     def __init__(self, db):
+        """Initialise repositories needed for cause statistics."""
         self.causes_repo = CausesRepository(db)
         self.deaths_repo = DeathsRepository(db)
 
     def get_cause_statistics(self, diagnosis_code):
+        """Aggregate death statistics for a cause: total deaths, average age range and year range. Raises 404 if cause not found."""
         # Verify cause exists
         cause = self.causes_repo.get_by_code(diagnosis_code)
         if not cause:

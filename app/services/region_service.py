@@ -7,10 +7,12 @@ from app.repositories.regions_repository import RegionsRepository
 
 class RegionService:
     def __init__(self, db):
+        """Initialise repositories needed for region statistics."""
         self.regions_repo = RegionsRepository(db)
         self.deaths_repo = DeathsRepository(db)
 
     def get_region_statistics(self, region_code):
+        """Aggregate death statistics for a region: total deaths, average age range and year range. Raises 404 if region not found."""
         # Verify region exists
         region = self.regions_repo.get_by_code(region_code)
         if not region:

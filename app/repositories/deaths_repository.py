@@ -59,9 +59,11 @@ class DeathsRepository(BaseRepository):
         return result["id"]
 
     def get_by_id(self, death_id):
+        """Fetch a single death record by its primary key."""
         return self.fetch_one(f"{self.DEATH_SELECT} WHERE deaths.id = %s;", (death_id,))
 
     def get_all(self, limit=100, offset=0):
+        """Fetch a paginated list of all death records with total count."""
         rows = self.fetch_all(
             f"{self.DEATH_SELECT} ORDER BY deaths.id LIMIT %s OFFSET %s;",
             (limit, offset),
@@ -85,7 +87,8 @@ class DeathsRepository(BaseRepository):
         order_by="id",
         direction="asc",
     ):
-
+        """Filter death records by any combination of year, region, sex, age, diagnosis and measure.
+    Returns paginated results with total count, applied limit/offset and sort order."""
         if order_by not in self.ALLOWED_ORDER_COLUMNS:
             raise ValueError(f"Invalid order_by column: {order_by}")
 

@@ -9,11 +9,13 @@ router = APIRouter(prefix="/regions", tags=["Regions"])
 
 @router.get("", response_model=RegionsListResponse)
 def get_regions(db=Depends(get_db)):
+    """Return a list of all regions."""
     controller = RegionsController(db)
     return controller.get_all()
 
 
 @router.get("/{region_code}", response_model=RegionDetailResponse)
 def get_region(region_code: int, db=Depends(get_db)):
+    """Return a single region with aggregated statistics."""
     controller = RegionsController(db)
     return controller.get_one(region_code)

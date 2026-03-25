@@ -20,6 +20,7 @@ app.include_router(causes_router)
 
 @app.get("/")
 def root():
+    """API root — returns available endpoints and documentation link."""
     return {
         "message": "Welcome to the Assignment Swedish Death Statistics API",
         "documentation": "https://cu1034.camp.lnu.se/api/docs",
