@@ -30,6 +30,13 @@ class UsersRepository(BaseRepository):
         )
         return result["id"]
 
+    def delete_by_id(self, user_id: int) -> None:
+        """Delete a user by ID (used for account deletion)"""
+        self.execute(
+            "DELETE FROM users WHERE id = %s;",
+            (user_id,),
+        )
+
 
 class RefreshTokenRepository(BaseRepository):
     """Repository for refresh token database operations"""
@@ -63,4 +70,11 @@ class RefreshTokenRepository(BaseRepository):
         self.execute(
             "DELETE FROM refresh_tokens WHERE token_hash = %s;",
             (token_hash,),
+        )
+
+    def delete_by_user_id(self, user_id: int) -> None:
+        """Delete all refresh tokens for a user - used on account deletion"""
+        self.execute(
+            "DELETE FROM refresh_tokens WHERE user_id = %s;",
+            (user_id,),
         )

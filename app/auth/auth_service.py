@@ -138,6 +138,12 @@ class AuthService:
 
         return {"id": user_id, "username": username}
 
+    # -- Account deletion --#
+    def delete_user(self, user_id: int) -> None:
+        """Delete the currently authenticated user's account and all their refresh tokens."""
+        self.refresh_token_repo.delete_by_user_id(user_id)
+        self.users_repo.delete_by_id(user_id)
+
     # -- Helpers --#
     @staticmethod
     def _hash_token(raw_token: str) -> str:

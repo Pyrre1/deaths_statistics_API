@@ -11,72 +11,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Login - valid credentials",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 200\", () => {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns access token\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body.access_token).to.be.a(\"string\");\r",
-                  "    pm.expect(body.access_token.length).to.be.greaterThan(0);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns refresh token\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body.refresh_token).to.be.a(\"string\");\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Token type is bearer\", () => {\r",
-                  "    pm.expect(pm.response.json().token_type).to.equal(\"bearer\");\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Expires in 1800 seconds\", () => {\r",
-                  "    pm.expect(pm.response.json().expires_in).to.equal(1800);\r",
-                  "});\r",
-                  "\r",
-                  "// Store token for use in other requests\r",
-                  "const body = pm.response.json();\r",
-                  "pm.collectionVariables.set(\"access_token\", body.access_token);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"change_me1234\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/token",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "token"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login - invalid credentials",
+          "name": "Login - non existing user",
           "event": [
             {
               "listen": "test",
@@ -103,7 +38,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"wrongpassword\"\r\n}",
+              "raw": "{\r\n    \"username\": \"not_a_user\",\r\n    \"password\": \"bad_password_not_in_the_database\"\r\n}\r\n",
               "options": {
                 "raw": {
                   "language": "json"
@@ -118,55 +53,6 @@
               "path": [
                 "auth",
                 "token"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Register -valid",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 201\", () => {\r",
-                  "    pm.response.to.have.status(201);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns new user id and username\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"id\");\r",
-                  "    pm.expect(body).to.have.property(\"username\");\r",
-                  "    pm.expect(body.id).to.be.a(\"number\");\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"testuser_{{$guid}}\",\r\n    \"password\": \"testpassword123\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "register"
               ]
             }
           },
@@ -269,6 +155,74 @@
           "response": []
         },
         {
+          "name": "Register -valid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 201\", () => {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "const body = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Returns new user id and username\", () => {\r",
+                  "    pm.expect(body).to.have.property(\"id\");\r",
+                  "    pm.expect(body).to.have.property(\"username\");\r",
+                  "    pm.expect(body.id).to.be.a(\"number\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.environment.set(\"test_user_id\", body.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const username = `testuser_${pm.variables.replaceIn(\"{{$guid}}\")}`;\r",
+                  "const password = \"testpassword123\";\r",
+                  "\r",
+                  "pm.environment.set(\"test_username\", username);\r",
+                  "pm.environment.set(\"test_password\", password);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{test_username}}\",\r\n    \"password\": \"{{test_password}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Register - duplicate username",
           "event": [
             {
@@ -296,7 +250,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"testpassword123\"\r\n}",
+              "raw": "{\r\n    \"username\": \"{{test_username}}\",\r\n    \"password\": \"{{test_password}}\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -311,6 +265,121 @@
               "path": [
                 "auth",
                 "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - invalid credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 401\", () => {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns error detail\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.equal(\"Invalid username or password\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{test_username}}\",\r\n    \"password\": \"wrongpassword\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - valid credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns access token\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body.access_token).to.be.a(\"string\");\r",
+                  "    pm.expect(body.access_token.length).to.be.greaterThan(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns refresh token\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body.refresh_token).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Token type is bearer\", () => {\r",
+                  "    pm.expect(pm.response.json().token_type).to.equal(\"bearer\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Expires in 1800 seconds\", () => {\r",
+                  "    pm.expect(pm.response.json().expires_in).to.equal(1800);\r",
+                  "});\r",
+                  "\r",
+                  "// Store token for use in other requests\r",
+                  "const body = pm.response.json();\r",
+                  "pm.collectionVariables.set(\"access_token\", body.access_token);\r",
+                  "pm.environment.set(\"refresh_token\", body.refresh_token);\r",
+                  "pm.environment.set(\"token_expiry\", Date.now() + 25 * 60 * 1000);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{test_username}}\",\r\n    \"password\": \"{{test_password}}\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "token"
               ]
             }
           },
@@ -639,7 +708,402 @@
       ]
     },
     {
-      "name": "Deaths",
+      "name": "Deaths - Authenticated",
+      "item": [
+        {
+          "name": "Create death - authenticated",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 201\", () => {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns created record with labels\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body.id).to.be.a(\"number\");\r",
+                  "    pm.expect(body.region_name).to.equal(\"Stockholms län\");\r",
+                  "    pm.expect(body.value).to.equal(42);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Has HATEOAS links\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body._links).to.have.property(\"self\");\r",
+                  "    pm.expect(body._links).to.have.property(\"region\");\r",
+                  "    pm.expect(body._links).to.have.property(\"cause\");\r",
+                  "});\r",
+                  "\r",
+                  "// Store created ID for update and delete tests\r",
+                  "pm.environment.set(\"created_death_id\", pm.response.json().id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"year\": 2024,\r\n    \"region_code\": 1,\r\n    \"sex_code\": 1,\r\n    \"age_code\": 1,\r\n    \"diagnosis_code\": \"99\",\r\n    \"measure_code\": 1,\r\n    \"value\": 42\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/deaths",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get death by id - just created",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns correct death record\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    const id = pm.environment.get(\"created_death_id\");\r",
+                  "\r",
+                  "    pm.expect(body.id).to.equal(id);\r",
+                  "    pm.expect(body).to.have.property(\"region_name\");\r",
+                  "    pm.expect(body).to.have.property(\"_links\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Links point to correct resources\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    const id = pm.environment.get(\"created_death_id\");\r",
+                  "    \r",
+                  "    pm.expect(body._links.self).to.equal(`/deaths/${id}`);\r",
+                  "    pm.expect(body._links.region).to.include(\"/regions/\");\r",
+                  "    pm.expect(body._links.cause).to.include(\"/causes/\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deaths/{{created_death_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths",
+                "{{created_death_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update death - authenticated",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Value was updated\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body.value).to.equal(99);\r",
+                  "    pm.expect(body.id).to.equal(\r",
+                  "        parseInt(pm.environment.get(\"created_death_id\"))\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"value\": 99\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/deaths/{{created_death_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths",
+                "{{created_death_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete death - authenticated",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns confirmation message\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.include(\"deleted\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deaths/{{created_death_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths",
+                "{{created_death_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create death - missing required fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns descriptive error\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.a(\"string\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"year\": 2024\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/deaths",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create death - invalid field(s) values",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns validation error detail\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.an(\"string\");\r",
+                  "    pm.expect(body.message.length).to.be.greaterThan(0);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"year\": 1800,\r\n    \"region_code\": 1,\r\n    \"sex_code\": 9,\r\n    \"age_code\": 1,\r\n    \"diagnosis_code\": \"99\",\r\n    \"measure_code\": 1,\r\n    \"value\": 42\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/deaths",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update death - invalid value",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns descriptive error\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.be.a(\"string\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"year\": 1800\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/deaths/291974",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths",
+                "291974"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete death - invalid id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 404\", () => {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns error message\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.include(\"not found\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deaths/00000000",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths",
+                "00000000"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Deaths - Unauthenticated",
       "item": [
         {
           "name": "Get all deaths",
@@ -864,153 +1328,6 @@
           "response": []
         },
         {
-          "name": "Create death - authenticated",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 201\", () => {\r",
-                  "    pm.response.to.have.status(201);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns created record with labels\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body.id).to.be.a(\"number\");\r",
-                  "    pm.expect(body.region_name).to.equal(\"Stockholms län\");\r",
-                  "    pm.expect(body.value).to.equal(42);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Has HATEOAS links\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body._links).to.have.property(\"self\");\r",
-                  "    pm.expect(body._links).to.have.property(\"region\");\r",
-                  "    pm.expect(body._links).to.have.property(\"cause\");\r",
-                  "});\r",
-                  "\r",
-                  "// Store created ID for update and delete tests\r",
-                  "pm.environment.set(\"created_death_id\", pm.response.json().id);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"year\": 2024,\r\n    \"region_code\": 1,\r\n    \"sex_code\": 1,\r\n    \"age_code\": 1,\r\n    \"diagnosis_code\": \"99\",\r\n    \"measure_code\": 1,\r\n    \"value\": 42\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/deaths",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update death - authenticated",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 200\", () => {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Value was updated\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body.value).to.equal(99);\r",
-                  "    pm.expect(body.id).to.equal(\r",
-                  "        parseInt(pm.environment.get(\"created_death_id\"))\r",
-                  "    );\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"value\": 99\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/deaths/{{created_death_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths",
-                "{{created_death_id}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete death - authenticated",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 200\", () => {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns confirmation message\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"message\");\r",
-                  "    pm.expect(body.message).to.include(\"deleted\");\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/deaths/{{created_death_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths",
-                "{{created_death_id}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Create death - unauthenticated",
           "event": [
             {
@@ -1149,221 +1466,24 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "Clean up",
+      "item": [
         {
-          "name": "Create death - missing required fields",
+          "name": "Delete user - clean up after tests",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status is 400\", () => {\r",
-                  "    pm.response.to.have.status(400);\r",
+                  "pm.test(\"Status is 204\", () => {\r",
+                  "    pm.expect([204]).to.include(pm.response.code);\r",
                   "});\r",
                   "\r",
-                  "pm.test(\"Returns descriptive error\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"message\");\r",
-                  "    pm.expect(body.message).to.be.a(\"string\");\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "packages": {},
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"year\": 2024\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/deaths",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create death - invalid input",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 400\", () => {\r",
-                  "    pm.response.to.have.status(400);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns validation error detail\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"message\");\r",
-                  "    pm.expect(body.message).to.be.an(\"string\");\r",
-                  "    pm.expect(body.message.length).to.be.greaterThan(0);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"year\": 1800,\r\n    \"region_code\": 1,\r\n    \"sex_code\": 9,\r\n    \"age_code\": 1,\r\n    \"diagnosis_code\": \"99\",\r\n    \"measure_code\": 1,\r\n    \"value\": 42\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/deaths",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create death - invalid field values",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 400\", () =>{\r",
-                  "    pm.response.to.have.status(400);\r",
-                  "})\r",
-                  "\r",
-                  "pm.test(\"Returns descriptive error\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"message\");\r",
-                  "    pm.expect(body.message).to.be.a(\"string\");\r",
-                  "    pm.expect(body.message.length).to.be.greaterThan(0);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"year\": 1800,\r\n    \"region_code\": 1,\r\n    \"sex_code\": 9,\r\n    \"age_code\": 1,\r\n    \"diagnosis_code\": \"99\",\r\n    \"measure_code\": 1,\r\n    \"value\": 42\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/deaths",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update death - invalid field values",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 400\", () => {\r",
-                  "    pm.response.to.have.status(400);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns descriptive error\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"message\");\r",
-                  "    pm.expect(body.message).to.be.a(\"string\");\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"year\": 1800\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/deaths/291974",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths",
-                "291974"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete death - invalid id",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 404\", () => {\r",
-                  "    pm.response.to.have.status(404);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns error message\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"message\");\r",
-                  "    pm.expect(body.message).to.include(\"not found\");\r",
-                  "});"
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -1375,13 +1495,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/deaths/00000000",
+              "raw": "{{base_url}}/auth/delete",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "deaths",
-                "00000000"
+                "auth",
+                "delete"
               ]
             }
           },
@@ -1414,16 +1534,21 @@
           "const isExpired = !tokenExpiry || Date.now() > parseInt(tokenExpiry);\r",
           "\r",
           "if (!hasToken || isExpired) {\r",
+          "    const username = pm.environment.get(\"test_username\");\r",
+          "    const password = pm.environment.get(\"test_password\");\r",
+          "    \r",
+          "    if (!username || !password) {\r",
+          "        console.warn(\"No test user credentials found. Auth cannot refresh.\");\r",
+          "        return;\r",
+          "    }\r",
+          "\r",
           "    pm.sendRequest({\r",
           "        url: pm.environment.get(\"base_url\") + \"/auth/token\",\r",
           "        method: \"POST\",\r",
           "        header: { \"Content-Type\": \"application/json\" },\r",
           "        body: {\r",
           "            mode: \"raw\",\r",
-          "            raw: JSON.stringify({\r",
-          "                username: \"admin\",\r",
-          "                password: \"change_me1234\"\r",
-          "            })\r",
+          "            raw: JSON.stringify({ username, password })\r",
           "        }\r",
           "    }, (error, response) => {\r",
           "        if (error) {\r",

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 
 from app.auth.auth_models import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
 from app.auth.auth_service import AuthService
+from app.dependencies.auth import get_current_user
 from app.dependencies.connection import get_db
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -35,3 +36,11 @@ def register(register_data: RegisterRequest, db=Depends(get_db)):
     auth_service = AuthService(db)
 
     return auth_service.register(register_data.username, register_data.password)
+
+
+@router.delete("/delete", status_code=204)
+def delete_current_user(current_user=Depends(get_current_user), db=Depends(get_db)):
+    """Delete the currently authenticated user's account."""
+    auth_service = AuthService(db)
+    auth_service.delete_user(int(current_user["sub"]))
+    return None
