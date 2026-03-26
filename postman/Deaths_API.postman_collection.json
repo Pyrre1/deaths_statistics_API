@@ -792,9 +792,9 @@
                   "    const body = pm.response.json();\r",
                   "    const id = pm.environment.get(\"created_death_id\");\r",
                   "    \r",
-                  "    pm.expect(body._links.self).to.equal(`/deaths/${id}`);\r",
-                  "    pm.expect(body._links.region).to.include(\"/regions/\");\r",
-                  "    pm.expect(body._links.cause).to.include(\"/causes/\");\r",
+                  "    pm.expect(body._links.self.href).to.include(`/deaths/${id}`);\r",
+                  "    pm.expect(body._links.region.href).to.include(\"/regions/\");\r",
+                  "    pm.expect(body._links.cause.href).to.include(\"/causes/\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -859,45 +859,6 @@
                 }
               }
             },
-            "url": {
-              "raw": "{{base_url}}/deaths/{{created_death_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "deaths",
-                "{{created_death_id}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete death - authenticated",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status is 200\", () => {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Returns confirmation message\", () => {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"message\");\r",
-                  "    pm.expect(body.message).to.include(\"deleted\");\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
             "url": {
               "raw": "{{base_url}}/deaths/{{created_death_id}}",
               "host": [
@@ -1249,16 +1210,18 @@
                   "\r",
                   "pm.test(\"Returns correct death record\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body.id).to.equal(291974);\r",
+                  "    const id = pm.environment.get(\"created_death_id\");\r",
+                  "    pm.expect(body.id).to.equal(id);\r",
                   "    pm.expect(body).to.have.property(\"region_name\");\r",
                   "    pm.expect(body).to.have.property(\"_links\");\r",
                   "});\r",
                   "\r",
                   "pm.test(\"Links point to correct resources\", () => {\r",
                   "    const body = pm.response.json();\r",
-                  "    pm.expect(body._links.self).to.equal(\"/deaths/291974\");\r",
-                  "    pm.expect(body._links.region).to.include(\"/regions/\");\r",
-                  "    pm.expect(body._links.cause).to.include(\"/causes/\");\r",
+                  "    const id = pm.environment.get(\"created_death_id\");\r",
+                  "    pm.expect(body._links.self.href).to.include(`/deaths/${id}`);\r",
+                  "    pm.expect(body._links.region.href).to.include(\"/regions/\");\r",
+                  "    pm.expect(body._links.cause.href).to.include(\"/causes/\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -1274,13 +1237,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/deaths/291974",
+              "raw": "{{base_url}}/deaths/{{created_death_id}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "deaths",
-                "291974"
+                "{{created_death_id}}"
               ]
             }
           },
@@ -1472,6 +1435,45 @@
     {
       "name": "Clean up",
       "item": [
+        {
+          "name": "Delete death - authenticated",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Returns confirmation message\", () => {\r",
+                  "    const body = pm.response.json();\r",
+                  "    pm.expect(body).to.have.property(\"message\");\r",
+                  "    pm.expect(body.message).to.include(\"deleted\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deaths/{{created_death_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deaths",
+                "{{created_death_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
         {
           "name": "Delete user - clean up after tests",
           "event": [
