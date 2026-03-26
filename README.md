@@ -110,6 +110,7 @@ newman run postman/Deaths_API.postman_collection.json \
   -e postman/production.postman_environment.json \
   --insecure
 ```
+> Note: `--insecure` needed to test against Cumulus
 
 #### Reset database (wipe all data and re-apply schema if needed)
 ```bash
@@ -225,6 +226,37 @@ This is a superset of the `{"error": "message"}` format specified in requirement
 - Use RS256 instead of HS256 if building for multi-service architecture.
 - I have in my own TODO list to migrate the hosting to my Raspberry Pi, and without VPN protection layer, rate limit is needed.
 - Implement pooling for better performance instead of create connection per request.
+
+## Security
+
+### Implemented
+- Passwords hashed with bcrypt (cost factor 12)
+- JWT authentication (HS256) with short-lived access tokens (30min) 
+  and rotating refresh tokens
+- Refresh tokens stored as SHA-256 hashes, single-use
+- All database queries use parameterized statements (psycopg3)
+- Input validation via Pydantic on all endpoints
+- Error responses never expose stack traces or internal details
+- Foreign key constraints enforce referential integrity at DB level
+
+### Known Limitations
+- No rate limiting on authentication endpoints — brute force attacks 
+  are theoretically possible
+- Base Docker image (python:3.12-slim-bookworm) contains 1 known CVE 
+  in an upstream Debian package — monitor for updated base images
+- Tokens stored client-side (bearer tokens) — httpOnly cookies would 
+  be more XSS-resistant for browser clients
+
+### OWASP Coverage
+| Risk | Status | Notes |
+|------|--------|-------|
+| A01 Broken Access Control | ✅ | Auth required for CUD operations |
+| A02 Security Misconfiguration | ✅ | NGINX reverse proxy, no debug mode |
+| A04 Cryptographic Failures | ✅ | bcrypt + JWT HS256 |
+| A05 Injection | ✅ | Parameterized queries throughout |
+| A07 Authentication Failures | ⚠️ | No rate limiting on auth endpoints |
+| API1 BOLA | ✅ | Public data; user delete scoped to self |
+| API2 Broken Authentication | ✅ | Token expiry + rotation implemented |
 
 ## Acknowledgements
 
