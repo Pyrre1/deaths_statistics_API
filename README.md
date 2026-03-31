@@ -66,13 +66,18 @@ cd assignment-api-design
 cp .env.example .env
 # Edit .env with your database credentials and JWT secret
 
-# 3. Start containers
+# 3. Download the data files, create folder data in root and paste files in there
+link: 'https://www.socialstyrelsen.se/statistik-och-data/statistik/for-utvecklare/'
+File CSV-filer Statistikdatabasen – Dödsorsaker 1997–2024 (7 st, 2,93 GB)
+note: there is 2 versions of the dataset, 7 files (used in this repo) and one data/year (61 files)
+
+# 4. Start containers
 docker compose up -d --build
 
-# 4. Seed the database, 3 options read more under **Seed Script** below.
+# 5. Seed the database, 3 options read more under **Seed Script** below.
 docker compose exec app python -m etl.load_data
 
-# 5. Create admin user, for manual testing. Not needed for test suite
+# 6. Create admin user, for manual testing. Not needed for test suite
 docker compose exec app python -m scripts.seed_admin
 ```
 
