@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.auth.auth_models import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
+from app.auth.auth_models import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, OAuthRequest
 from app.auth.auth_service import AuthService
 from app.dependencies.auth import get_current_user
 from app.dependencies.connection import get_db
@@ -37,6 +37,11 @@ def register(register_data: RegisterRequest, db=Depends(get_db)):
 
     return auth_service.register(register_data.username, register_data.password)
 
+@router.post("/oauth", response_model=TokenResponse, status_code=200)
+def oauth_login(oauth_data: OAuthRequest, db=Depends(get_db)):
+    """Find-or-create a GitHub OAuth user and return tokens."""
+    auth_service = AuthService(db)
+    return auth_service.oauth_login(oauth_data.github_id, oauth_data.email, oauth_data.name)
 
 @router.delete("/delete", status_code=204)
 def delete_current_user(current_user=Depends(get_current_user), db=Depends(get_db)):

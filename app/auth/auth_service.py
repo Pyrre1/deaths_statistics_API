@@ -125,6 +125,26 @@ class AuthService:
             "token_type": "bearer",
             "expires_in": self.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         }
+    
+    def oauth_login(self, github_id: str, email: str, name: str) -> dict:
+        """Find-or-create a GitHub OAuth user and return tokens."""
+        username = f"github_{github_id}"
+        user = self.users_repo.get_by_username(username)
+
+        if not user:
+            password_hash = self.hash_password(secrets.token_hex(32))
+            user_id = self.users_repo.insert_one(username, password_hash)
+            user = self.users_repo.get_by_username(username)
+
+        access_token = self.create_access_token(user["id"], user["username"])
+        refresh_token, _ = self.create_refresh_token(user["id"])
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": self.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    }
 
     # -- Registration --#
     def register(self, username: str, password: str) -> dict:
