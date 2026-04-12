@@ -22,3 +22,8 @@ class RegisterRequest(BaseModel):
     """Request model for user registration endpoint"""
     username: str = Field(..., min_length=4, max_length=50,description="Username")
     password: str = Field(..., min_length=12, description="Password")
+
+class OAuthRequest(BaseModel):
+    github_id: str
+    email: str
+    name: str
