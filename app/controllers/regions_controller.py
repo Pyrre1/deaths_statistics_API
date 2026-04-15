@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from app.config import API_VERSION
+from app.config import API_VERSION, BASE_URL
 from app.models.region_models import RegionDetailResponse, RegionResponse, RegionsListResponse
 from app.repositories.regions_repository import RegionsRepository
 from app.services.region_service import RegionService
@@ -49,8 +49,8 @@ class RegionsController:
             name=region_data["region_text"],
             statistics=statistics,
             _links={
-                "self": f"/{API_VERSION}/regions/{region_code}",
-                "deaths": f"/{API_VERSION}/deaths?region_code={region_code}&measure_code=1",
-                "collection": f"/{API_VERSION}/regions",
+                "self": f"{BASE_URL}/{API_VERSION}/regions/{region_code}",
+                "deaths": f"{BASE_URL}/{API_VERSION}/deaths?region_code={region_code}&measure_code=1",
+                "collection": f"{BASE_URL}/{API_VERSION}/regions",
             },
         )

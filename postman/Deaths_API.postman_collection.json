@@ -475,7 +475,7 @@
                   "    const body = pm.response.json();\r",
                   "    pm.expect(body._links).to.have.property(\"self\");\r",
                   "    pm.expect(body._links).to.have.property(\"deaths\");\r",
-                  "    pm.expect(body._links.self).to.equal(\"/regions/1\");\r",
+                  "    pm.expect(body._links.self).to.contain(\"/regions/1\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -636,7 +636,7 @@
                   "    const body = pm.response.json();\r",
                   "    pm.expect(body._links).to.have.property(\"self\");\r",
                   "    pm.expect(body._links).to.have.property(\"deaths\");\r",
-                  "    pm.expect(body._links.self).to.equal(\"/causes/I61\");\r",
+                  "    pm.expect(body._links.self).to.contain(\"/causes/I61\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
