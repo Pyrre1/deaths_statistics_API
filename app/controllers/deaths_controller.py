@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from psycopg.errors import ForeignKeyViolation
 
+from app.config import API_VERSION, BASE_URL
 from app.models.death_models import DeathCreate, DeathResponse, DeathsListResponse, DeathUpdate
 from app.repositories.deaths_repository import DeathsRepository
 from app.utils.links import pagination_links
@@ -12,16 +13,22 @@ class DeathsController:
 
     def _map_to_response(self, death_data):
         """Map a database row to a DeathResponse with HATEOAS links."""
-        base = f"https://cu1034.camp.lnu.se/api/deaths/{death_data['id']}"
+        base = f"{BASE_URL}/{API_VERSION}/deaths/{death_data['id']}"
         return DeathResponse(
             **{key: value for key, value in death_data.items()},
             _links={
-                "self":       {"href": base, "method": "GET"},
-                "update":     {"href": base, "method": "PUT"},
-                "delete":     {"href": base, "method": "DELETE"},
-                "collection": {"href": "https://cu1034.camp.lnu.se/api/deaths", "method": "GET"},
-                "region":     {"href": f"https://cu1034.camp.lnu.se/api/regions/{death_data['region_code']}", "method": "GET"},
-                "cause":      {"href": f"https://cu1034.camp.lnu.se/api/causes/{death_data['diagnosis_code']}", "method": "GET"},
+                "self": {"href": base, "method": "GET"},
+                "update": {"href": base, "method": "PUT"},
+                "delete": {"href": base, "method": "DELETE"},
+                "collection": {"href": f"{BASE_URL}/{API_VERSION}/deaths", "method": "GET"},
+                "region": {
+                    "href": f"{BASE_URL}/{API_VERSION}/regions/{death_data['region_code']}",
+                    "method": "GET",
+                },
+                "cause": {
+                    "href": f"{BASE_URL}/{API_VERSION}/causes/{death_data['diagnosis_code']}",
+                    "method": "GET",
+                },
             },
         )
 
@@ -39,8 +46,7 @@ class DeathsController:
             )
         except ForeignKeyViolation as error:
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid reference: {error.diag.message_detail}"
+                status_code=400, detail=f"Invalid reference: {error.diag.message_detail}"
             )
 
         return self.get_one(new_id)
@@ -80,7 +86,7 @@ class DeathsController:
         deaths = [self._map_to_response(death) for death in result["items"]]
 
         links = pagination_links(
-            "https://cu1034.camp.lnu.se/api/deaths",
+            f"{BASE_URL}/{API_VERSION}/deaths",
             offset=offset,
             limit=limit,
             total=result["total"],
@@ -92,7 +98,7 @@ class DeathsController:
             diagnosis_code=diagnosis_code,
             measure_code=measure_code,
         )
-        links["create"] = {"href": "https://cu1034.camp.lnu.se/api/deaths", "method": "POST"}
+        links["create"] = {"href": f"{BASE_URL}/{API_VERSION}/deaths", "method": "POST"}
 
         return DeathsListResponse(
             data=deaths,
@@ -122,10 +128,8 @@ class DeathsController:
             updated = self.deaths_repo.update_one(death_id, **update_data)
         except ForeignKeyViolation as error:
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid reference: {error.diag.message_detail}"
+                status_code=400, detail=f"Invalid reference: {error.diag.message_detail}"
             )
-
 
         if not updated:
             raise HTTPException(status_code=404, detail="Death record not found")

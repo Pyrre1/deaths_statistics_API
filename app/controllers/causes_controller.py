@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 
+from app.config import API_VERSION, BASE_URL
 from app.models.cause_models import CauseDetailResponse, CauseResponse, CausesListResponse
 from app.repositories.causes_repository import CausesRepository
 from app.services.cause_service import CauseService
@@ -17,8 +18,8 @@ class CausesController:
             code=cause_data["diagnosis_code"],
             name=cause_data["diagnosis_text"],
             _links={
-                "self": f"/causes/{cause_data['diagnosis_code']}",
-                "deaths": f"/deaths?diagnosis_code={cause_data['diagnosis_code']}&measure_code=1",
+                "self": f"{BASE_URL}/{API_VERSION}/causes/{cause_data['diagnosis_code']}",
+                "deaths": f"{BASE_URL}/{API_VERSION}/deaths?diagnosis_code={cause_data['diagnosis_code']}&measure_code=1",
             },
         )
 
@@ -33,7 +34,9 @@ class CausesController:
             total=total,
             limit=limit,
             offset=offset,
-            _links=pagination_links("/causes", offset=offset, limit=limit, total=total),
+            _links=pagination_links(
+                f"/{API_VERSION}/causes", offset=offset, limit=limit, total=total
+            ),
         )
 
     def get_one(self, diagnosis_code):
@@ -51,8 +54,8 @@ class CausesController:
             name=cause_data["diagnosis_text"],
             statistics=statistics,
             _links={
-                "self": f"/causes/{diagnosis_code}",
-                "deaths": f"/deaths?diagnosis_code={diagnosis_code}&measure_code=1",
-                "collection": "/causes",
+                "self": f"{BASE_URL}/{API_VERSION}/causes/{diagnosis_code}",
+                "deaths": f"{BASE_URL}/{API_VERSION}/deaths?diagnosis_code={diagnosis_code}&measure_code=1",
+                "collection": f"{BASE_URL}/{API_VERSION}/causes",
             },
         )

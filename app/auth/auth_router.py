@@ -1,15 +1,23 @@
+import os
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from app.auth.auth_models import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, OAuthRequest
+from app.auth.auth_models import (
+    LoginRequest,
+    OAuthRequest,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+)
 from app.auth.auth_service import AuthService
 from app.dependencies.auth import get_current_user
 from app.dependencies.connection import get_db
-import os
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 limiter = Limiter(key_func=get_remote_address)  # Create a limiter instance for this router
+
 
 @router.post("/token", response_model=TokenResponse, status_code=200)
 @limiter.limit("10/minute")
@@ -43,15 +51,22 @@ def register(request: Request, register_data: RegisterRequest, db=Depends(get_db
 
     return auth_service.register(register_data.username, register_data.password)
 
+
 @router.post("/oauth", response_model=TokenResponse, status_code=200)
 @limiter.limit("10/minute")
-def oauth_login(request: Request, oauth_data: OAuthRequest, db=Depends(get_db), x_internal_secret: str = Header(...)):
+def oauth_login(
+    request: Request,
+    oauth_data: OAuthRequest,
+    db=Depends(get_db),
+    x_internal_secret: str = Header(...),
+):
     """Find-or-create a GitHub OAuth user and return tokens."""
     if x_internal_secret != os.getenv("INTERNAL_SECRET"):
         raise HTTPException(status_code=401, detail="Invalid internal secret")
 
     auth_service = AuthService(db)
     return auth_service.oauth_login(oauth_data.github_id, oauth_data.email, oauth_data.name)
+
 
 @router.delete("/delete", status_code=204)
 def delete_current_user(current_user=Depends(get_current_user), db=Depends(get_db)):
