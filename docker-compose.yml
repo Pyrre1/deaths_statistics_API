@@ -5,7 +5,7 @@ services:
     container_name: deaths-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-test_db_password}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-deathsdb}
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -32,13 +32,16 @@ services:
       - DB_HOST=postgres
       - DB_NAME=${DB_NAME:-deathsdb}
       - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-test_db_password}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_PORT=${DB_PORT:-5432}
       - DATA_DIR=/app/data
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - BASE_URL=${BASE_URL}
+      - DATA_LOAD_MODE=${DATA_LOAD_MODE}
     volumes:
       - ./app:/app/app
       - ./data:/app/data
@@ -49,7 +52,7 @@ services:
         condition: service_healthy
     networks:
       - deaths-network
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 volumes:
   pg_data:

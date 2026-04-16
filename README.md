@@ -243,10 +243,9 @@ This is a superset of the `{"error": "message"}` format specified in requirement
 - Input validation via Pydantic on all endpoints
 - Error responses never expose stack traces or internal details
 - Foreign key constraints enforce referential integrity at DB level
+- Rate limiting on all endpoints, and stricter for authentication endpoints
 
 ### Known Limitations
-- No rate limiting on authentication endpoints — brute force attacks 
-  are theoretically possible
 - Base Docker image (python:3.12-slim-bookworm) contains 1 known CVE 
   in an upstream Debian package — monitor for updated base images
 - Tokens stored client-side (bearer tokens) — httpOnly cookies would 
@@ -259,7 +258,7 @@ This is a superset of the `{"error": "message"}` format specified in requirement
 | A02 Security Misconfiguration | ✅ | NGINX reverse proxy, no debug mode |
 | A04 Cryptographic Failures | ✅ | bcrypt + JWT HS256 |
 | A05 Injection | ✅ | Parameterized queries throughout |
-| A07 Authentication Failures | ⚠️ | No rate limiting on auth endpoints |
+| A07 Authentication Failures | ✅ | Rate limiting on auth endpoints |
 | API1 BOLA | ✅ | Public data; user delete scoped to self |
 | API2 Broken Authentication | ✅ | Token expiry + rotation implemented |
 
@@ -290,7 +289,7 @@ See [all requirements in Issues](../../issues/). Close issues as you implement t
 | RESTful endpoints with proper HTTP methods and status codes | [#12](../../issues/12) | ✅ |
 | HATEOAS (hypermedia links in responses) | [#13](../../issues/13) | ✅ |
 
-### Functional Requirements — GraphQL
+### Functional Requirements — GraphQL (n/a)
 
 | Requirement | Issue | Status |
 |---|---|---|
@@ -308,6 +307,6 @@ See [all requirements in Issues](../../issues/). Close issues as you implement t
 | Seed script for sample data | [#5](../../issues/5) | ✅ |
 | Code quality (consistent standard, modular, documented) | [#10](../../issues/10) | ✅ |
 | Deployed and publicly accessible | [#9](../../issues/9) | ✅ |
-| Peer review reflection submitted on merge request | [#11](../../issues/11) | :white_large_square: |
+| Peer review reflection submitted on merge request | [#11](../../issues/11) | ✅ |
 
 
