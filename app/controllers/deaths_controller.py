@@ -44,9 +44,9 @@ class DeathsController:
                 measure_code=death_data.measure_code,
                 value=death_data.value,
             )
-        except ForeignKeyViolation as error:
+        except ForeignKeyViolation:
             raise HTTPException(
-                status_code=400, detail=f"Invalid reference: {error.diag.message_detail}"
+                status_code=400, detail="Invalid reference"
             )
 
         return self.get_one(new_id)
@@ -126,9 +126,9 @@ class DeathsController:
 
         try:
             updated = self.deaths_repo.update_one(death_id, **update_data)
-        except ForeignKeyViolation as error:
+        except ForeignKeyViolation:
             raise HTTPException(
-                status_code=400, detail=f"Invalid reference: {error.diag.message_detail}"
+                status_code=400, detail="Invalid reference"
             )
 
         if not updated:
