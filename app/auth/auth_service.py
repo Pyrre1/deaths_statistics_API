@@ -135,10 +135,6 @@ class AuthService:
             password_hash = self.hash_password(secrets.token_hex(32))
             self.users_repo.insert_one(username, password_hash)
             user = self.users_repo.get_by_username(username)
-
-        if not user:
-            self.users_repo.insert_one(username, password_hash)
-            user = self.users_repo.get_by_username(username)
             if not user:
                 raise HTTPException(status_code=500, detail="Failed to create user")
 
