@@ -34,6 +34,7 @@ def get_deaths(
     direction: str = Query("asc", pattern="^(asc|desc)$", description="Sort direction"),
     limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
     offset: int = Query(0, ge=0, description="Number of records to skip"),
+    exclude_diagnosis_code: int | None = Query(None, description="Exclude a diagnosis code"),
     db=Depends(get_db),
 ):
     """Get death records with optional filtering and pagination"""
@@ -50,6 +51,7 @@ def get_deaths(
         direction=direction,
         limit=limit,
         offset=offset,
+        exclude_diagnosis_code=exclude_diagnosis_code,
     )
 
 
