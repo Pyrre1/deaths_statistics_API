@@ -1,6 +1,3 @@
-from app.config import BASE_URL
-
-
 def pagination_links(base_url: str, offset: int, limit: int, total: int, **filters) -> dict:
     """Build next/prev pagination links, ignoring None filters."""
     filter_params = "&".join(
@@ -8,9 +5,9 @@ def pagination_links(base_url: str, offset: int, limit: int, total: int, **filte
     )
 
     base = (
-        f"{BASE_URL}{base_url}?limit={limit}&{filter_params}"
+        f"{base_url}?limit={limit}&{filter_params}"
         if filter_params
-        else f"{BASE_URL}{base_url}?limit={limit}"
+        else f"{base_url}?limit={limit}"
     )
 
     has_next = offset + limit < total
