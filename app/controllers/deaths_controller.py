@@ -64,6 +64,7 @@ class DeathsController:
         direction="asc",
         limit=100,
         offset=0,
+        exclude_diagnosis_code=None,
     ) -> DeathsListResponse:
         """Filter and paginate death records, mapping results to DeathsListResponse with HATEOAS links."""
         try:
@@ -79,6 +80,7 @@ class DeathsController:
                 direction=direction,
                 limit=limit,
                 offset=offset,
+                exclude_diagnosis_code=exclude_diagnosis_code,
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -97,6 +99,7 @@ class DeathsController:
             age_code=age_code,
             diagnosis_code=diagnosis_code,
             measure_code=measure_code,
+            exclude_diagnosis_code=exclude_diagnosis_code,
         )
         links["create"] = {"href": f"{BASE_URL}/{API_VERSION}/deaths", "method": "POST"}
 

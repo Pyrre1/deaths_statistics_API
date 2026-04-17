@@ -86,6 +86,7 @@ class DeathsRepository(BaseRepository):
         offset=0,
         order_by="id",
         direction="asc",
+        exclude_diagnosis_code=None,
     ):
         """Filter death records by any combination of year, region, sex, age, diagnosis and measure.
     Returns paginated results with total count, applied limit/offset and sort order."""
@@ -121,6 +122,10 @@ class DeathsRepository(BaseRepository):
         if diagnosis_code is not None:
             filters.append("deaths.diagnosis_code = %s")
             params.append(diagnosis_code)
+
+        if exclude_diagnosis_code is not None:
+            filters.append("deaths.diagnosis_code != %s")
+            params.append(exclude_diagnosis_code)
 
         if measure_code is None:
             measure_code = 1
