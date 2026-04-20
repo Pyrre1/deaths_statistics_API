@@ -18,8 +18,8 @@ class RegionsController:
             id=region_data["region_code"],
             name=region_data["region_text"],
             _links={
-                "self": f"/{API_VERSION}/regions/{region_code}",
-                "deaths": f"/{API_VERSION}/deaths?region_code={region_code}&measure_code=1",
+                "self": f"{BASE_URL}/{API_VERSION}/regions/{region_code}",
+                "deaths": f"{BASE_URL}/{API_VERSION}/deaths?region_code={region_code}&measure_code=1",
             },
         )
 

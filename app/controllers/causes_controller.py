@@ -35,7 +35,7 @@ class CausesController:
             limit=limit,
             offset=offset,
             _links=pagination_links(
-                f"/{API_VERSION}/causes", offset=offset, limit=limit, total=total
+                f"{BASE_URL}/{API_VERSION}/causes", offset=offset, limit=limit, total=total
             ),
         )
 
