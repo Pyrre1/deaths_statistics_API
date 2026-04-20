@@ -31,7 +31,7 @@ class RegionsController:
         return RegionsListResponse(
             data=regions,
             total=len(regions),
-            _links={"self": "/regions"},
+            _links={"self": f"{BASE_URL}/{API_VERSION}/regions"},
         )
 
     def get_one(self, region_code):
