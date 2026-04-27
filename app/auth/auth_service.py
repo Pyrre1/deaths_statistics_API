@@ -126,9 +126,31 @@ class AuthService:
             "expires_in": self.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         }
 
-    def oauth_login(self, github_id: str, email: str, name: str) -> dict:
+    def oauth_login_github(self, github_id: str, email: str, name: str) -> dict:
         """Find-or-create a GitHub OAuth user and return tokens."""
         username = f"github_{github_id}"
+        user = self.users_repo.get_by_username(username)
+
+        if not user:
+            password_hash = self.hash_password(secrets.token_hex(32))
+            self.users_repo.insert_one(username, password_hash)
+            user = self.users_repo.get_by_username(username)
+            if not user:
+                raise HTTPException(status_code=500, detail="Failed to create user")
+
+        access_token = self.create_access_token(user["id"], user["username"])
+        refresh_token, _ = self.create_refresh_token(user["id"])
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": self.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    }
+
+    def oauth_login_google(self, google_id: str, email: str, name: str) -> dict:
+        """Find-or-create a Google OAuth user and return tokens."""
+        username = f"google_{google_id}"
         user = self.users_repo.get_by_username(username)
 
         if not user:

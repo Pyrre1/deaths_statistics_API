@@ -66,8 +66,21 @@ def oauth_login(
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     auth_service = AuthService(db)
-    return auth_service.oauth_login(oauth_data.github_id, oauth_data.email, oauth_data.name)
 
+    if oauth_data.provider == "github":
+        return auth_service.oauth_login_github(
+            oauth_data.provider_id,
+            oauth_data.email,
+            oauth_data.name,
+        )
+
+    if oauth_data.provider == "google":
+        return auth_service.oauth_login_google(
+            oauth_data.provider_id,
+            oauth_data.email,
+            oauth_data.name,
+        )
+    raise HTTPException(status_code=400, detail="Unsupported OAuth provider")
 
 @router.delete("/delete", status_code=204)
 def delete_current_user(current_user=Depends(get_current_user), db=Depends(get_db)):
